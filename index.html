@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Python & Encriptación — Exposición Oficial</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.5.1 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            deep: {
+              950: '#000000',
+              900: '#030305',
+              850: '#07070b',
+              800: '#0e0e14',
+              700: '#161620',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    html {
+      scroll-behavior: smooth;
+      background-color: #000000;
+      scroll-snap-type: y proximity;
+      scroll-padding-top: 10px;
+    }
+    body {
+      background-color: #000000;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Cada sección ocupa la pantalla completa en el proyector */
+    .projector-section {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 3.5rem;
+      padding-bottom: 3.5rem;
+    }
+
+    /* Fondo negro azabache puro (OLED Black) */
+    .bg-deep-canvas {
+      background-color: #000000;
+      background-image: none;
+    }
+
+    /* =========================================================
+       SISTEMA DE ANIMACIONES (SCROLL REVEAL & STAGGER)
+    ========================================================== */
+    [data-motion="fade-up"] {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    [data-motion="fade-in"] {
+      opacity: 0;
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity;
+    }
+    [data-motion="slide-left"] {
+      opacity: 0;
+      transform: translateX(-36px);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    [data-motion="slide-right"] {
+      opacity: 0;
+      transform: translateX(36px);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    [data-motion="scale-up"] {
+      opacity: 0;
+      transform: scale(0.94);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    /* Delays para cascada */
+    [data-delay="50"]  { transition-delay: 0.05s !important; }
+    [data-delay="100"] { transition-delay: 0.08s !important; }
+    [data-delay="150"] { transition-delay: 0.12s !important; }
+    [data-delay="200"] { transition-delay: 0.18s !important; }
+    [data-delay="250"] { transition-delay: 0.22s !important; }
+    [data-delay="300"] { transition-delay: 0.28s !important; }
+    [data-delay="350"] { transition-delay: 0.32s !important; }
+    [data-delay="400"] { transition-delay: 0.38s !important; }
+
+    .in-view {
+      opacity: 1 !important;
+      transform: translateY(0) translateX(0) scale(1) !important;
+    }
+
+    /* Flotación suave para insignias */
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .motion-float {
+      animation: gentleFloat 5s ease-in-out infinite;
+    }
+
+    /* Canvas de partículas de fondo */
+    #cryptoCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Tarjetas de cristal negro con Spotlight Dinámico (Glow que sigue el cursor) */
+    .motion-card {
+      position: relative;
+      background: rgba(10, 10, 14, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow: 
+        0 20px 45px -15px rgba(0, 0, 0, 0.98),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease;
+      overflow: hidden;
+    }
+    .motion-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(380px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.1), transparent 50%);
+      pointer-events: none;
+      border-radius: inherit;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .motion-card:hover::before {
+      opacity: 1;
+    }
+    .motion-card:hover {
+      transform: translateY(-5px) scale(1.008);
+      border-color: rgba(255, 255, 255, 0.38);
+      box-shadow: 
+        0 25px 50px -15px rgba(0, 0, 0, 1),
+        0 0 32px rgba(255, 255, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    /* Terminal de código */
+    .terminal-window {
+      background: #040407;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 
+        0 30px 60px -15px rgba(0, 0, 0, 0.98),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+    .py-kw { color: #c084fc; font-weight: 600; }
+    .py-fn { color: #38bdf8; font-weight: 500; }
+    .py-str { color: #34d399; }
+    .py-bytes { color: #fbbf24; }
+    .py-cm { color: #94a3b8; font-style: italic; }
+    .py-cls { color: #60a5fa; font-weight: 600; }
+    .py-num { color: #f87171; }
+
+
+
+    /* Scrollbars oscuros */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #1c1c24; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2f2f3d; }
+  </style>
+</head>
+<body class="bg-deep-canvas min-h-screen flex flex-col selection:bg-white/25 selection:text-white relative">
+
+  <!-- Canvas de partículas y constelación criptográfica de fondo interactivo -->
+  <canvas id="cryptoCanvas" aria-hidden="true"></canvas>
+
+  <!-- Notificación Toast -->
+  <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 bg-deep-850 border border-white/25 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-sm font-semibold">
+    <i class="fa-solid fa-check text-emerald-400"></i>
+    <span id="toastMessage">Acción completada</span>
+  </div>
+
+  <!-- =========================================================
+       CONTENIDO PRINCIPAL: SECCIÓN POR SECCIÓN (FULL HEIGHT)
+  ========================================================== -->
+  <main class="relative z-10 flex-1 w-full max-w-6xl mx-auto px-5 sm:px-8 space-y-16">
+
+    <!-- =========================================================
+         00. HERO / PORTADA DE APERTURA PARA PROYECTOR
+    ========================================================== -->
+    <section id="hero" class="projector-section text-center items-center">
+      
+      <!-- Insignia de alta visibilidad -->
+      <div data-motion="fade-up" class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.08] border border-white/20 text-slate-200 font-mono text-xs sm:text-sm mb-6 motion-float">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="tracking-wide uppercase font-semibold">Ciberseguridad Aplicada &bull; Python 3.12</span>
+      </div>
+
+      <!-- Título de impacto visible a gran distancia -->
+      <h1 data-motion="fade-up" data-delay="100" class="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]">
+        Python & <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">Encriptación</span>
+      </h1>
+
+      <p data-motion="fade-up" data-delay="200" class="mt-4 text-base sm:text-xl md:text-2xl text-slate-200 max-w-3xl leading-relaxed font-normal">
+        Cómo transformar información legible en secuencias ininteligibles, proteger la privacidad y aplicar criptografía moderna con Python.
+      </p>
+
+      <!-- Terminal Interactiva Hero con fuente grande y legible -->
+      <div data-motion="scale-up" data-delay="300" class="w-full max-w-2xl mt-8 rounded-2xl terminal-window p-5 text-left text-slate-300 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3 text-xs sm:text-sm font-mono text-slate-300 border-b border-white/[0.1] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-full bg-rose-500/80"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-amber-400/80"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500/80"></span>
+            <span class="ml-2 text-white font-medium">terminal_cripto.py</span>
+          </div>
+          <button onclick="triggerHeroMorph()" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-white transition text-xs font-mono font-semibold flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-rotate text-xs"></i>
+            <span>Alternar Cifrado</span>
+          </button>
+        </div>
+
+        <div class="font-mono text-xs sm:text-sm text-slate-400 mb-2">
+          <span class="text-emerald-400 font-semibold">py-sec@server</span>:<span class="text-sky-300">~/cryptography</span>$ python demo_cipher.py
+        </div>
+
+        <div id="heroCipherDisplay" class="font-mono font-bold text-xl sm:text-3xl text-amber-300 bg-black/80 px-5 py-4 rounded-xl border border-white/[0.15] min-h-[76px] flex items-center justify-between break-all select-all shadow-inner">
+          Mi clave del WiFi es 1234
+        </div>
+        
+        <div class="flex items-center justify-between mt-3 text-xs sm:text-sm font-mono text-slate-300">
+          <span id="heroCipherState" class="text-emerald-400 flex items-center gap-2 font-semibold">
+            <i class="fa-solid fa-lock-open"></i> Texto Plano Original (Legible)
+          </span>
+          <span class="text-slate-400 font-mono">Fernet (AES-128-CBC + HMAC)</span>
+        </div>
+      </div>
+
+      <!-- Botón de inicio para el proyector -->
+      <div data-motion="fade-up" data-delay="350" class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <a href="#conceptos" class="px-7 py-3.5 rounded-xl bg-white text-black font-display font-bold text-base sm:text-lg hover:bg-slate-200 shadow-[0_0_25px_rgba(255,255,255,0.25)] transition flex items-center gap-3">
+          <span>Comenzar Exposición</span>
+          <i class="fa-solid fa-arrow-down text-sm"></i>
+        </a>
+        <button onclick="toggleFullscreen()" class="px-5 py-3.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.16] border border-white/20 text-white font-display font-semibold text-base transition flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-expand text-sm"></i>
+          <span>Pantalla Completa (F)</span>
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         01. CONCEPTOS
+    ========================================================== -->
+    <section id="conceptos" class="projector-section">
+      <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-white"></span> 01 &bull; Fundamentos
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Conceptos de Criptografía</h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+          Los 4 elementos esenciales del proceso criptográfico y las 3 grandes familias matemáticas.
+        </p>
+      </div>
+
+      <!-- 4 Términos Básicos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div data-motion="fade-up" data-delay="100" class="motion-card p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-sky-300 font-bold border border-white/10">01. Entrada</span>
+            <i class="fa-solid fa-file-lines text-sky-400 text-lg"></i>
+          </div>
+          <h3 class="font-display font-bold text-white text-lg">Texto Plano</h3>
+          <p class="text-slate-200 text-sm mt-1.5 leading-relaxed">Información original legible por humanos antes del procesamiento criptográfico.</p>
+        </div>
+
+        <div data-motion="fade-up" data-delay="150" class="motion-card p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-purple-300 font-bold border border-white/10">02. Regla</span>
+            <i class="fa-solid fa-calculator text-purple-400 text-lg"></i>
+          </div>
+          <h3 class="font-display font-bold text-white text-lg">Algoritmo (Cifrador)</h3>
+          <p class="text-slate-200 text-sm mt-1.5 leading-relaxed">Fórmula matemática pública. Su seguridad nunca debe depender de mantenerlo oculto.</p>
+        </div>
+
+        <div data-motion="fade-up" data-delay="200" class="motion-card p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-amber-300 font-bold border border-white/10">03. Secreto</span>
+            <i class="fa-solid fa-key text-amber-400 text-lg"></i>
+          </div>
+          <h3 class="font-display font-bold text-white text-lg">Clave Criptográfica</h3>
+          <p class="text-slate-200 text-sm mt-1.5 leading-relaxed">El parámetro secreto que controla la transformación. Sin ella, el mensaje es ilegible.</p>
+        </div>
+
+        <div data-motion="fade-up" data-delay="250" class="motion-card p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-emerald-300 font-bold border border-white/10">04. Salida</span>
+            <i class="fa-solid fa-lock text-emerald-400 text-lg"></i>
+          </div>
+          <h3 class="font-display font-bold text-white text-lg">Texto Cifrado</h3>
+          <p class="text-slate-200 text-sm mt-1.5 leading-relaxed">Secuencia binaria que parece puramente aleatoria y protege los datos.</p>
+        </div>
+      </div>
+
+      <!-- Las 3 Familias Criptográficas -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        <!-- Simétrico -->
+        <div data-motion="slide-left" data-delay="150" class="motion-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-sky-400 text-lg">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-white/[0.08] text-sky-300 font-bold border border-white/15">1 Sola Clave</span>
+            </div>
+            <h3 class="font-display text-xl sm:text-2xl font-bold text-white">Cifrado Simétrico</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              La <strong>misma clave</strong> cifra y descifra. Es ultra rápido, óptimo para bases de datos, discos y tráfico HTTPS.
+            </p>
+
+            <div class="mt-4 p-3.5 rounded-xl bg-black/70 border border-white/[0.1] font-mono text-xs sm:text-sm">
+              <div class="flex items-center justify-between text-slate-200">
+                <span>Texto Plano</span>
+                <span class="text-sky-300 font-bold"><i class="fa-solid fa-lock"></i> Clave K</span>
+                <span class="text-emerald-400 font-bold">Cifrado</span>
+              </div>
+              <div class="my-2 border-t border-dashed border-white/15"></div>
+              <div class="flex items-center justify-between text-slate-200">
+                <span class="text-emerald-400 font-bold">Cifrado</span>
+                <span class="text-sky-300 font-bold"><i class="fa-solid fa-lock-open"></i> Clave K</span>
+                <span>Texto Plano</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] flex items-center justify-between text-xs sm:text-sm">
+            <span class="text-slate-300">Ejemplo: <strong class="text-white font-mono">AES-256, Fernet</strong></span>
+            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-bolt mr-1"></i>Ultra Rápido</span>
+          </div>
+        </div>
+
+        <!-- Asimétrico -->
+        <div data-motion="fade-up" data-delay="200" class="motion-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-amber-300 text-lg">
+                <i class="fa-solid fa-lock-open"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-white/[0.08] text-amber-300 font-bold border border-white/15">Par de Claves</span>
+            </div>
+            <h3 class="font-display text-xl sm:text-2xl font-bold text-white">Cifrado Asimétrico</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Usa una clave <strong>Pública</strong> (para que cualquiera cifre) y una clave <strong>Privada</strong> (secreta para descifrar y firmar).
+            </p>
+
+            <div class="mt-4 p-3.5 rounded-xl bg-black/70 border border-white/[0.1] font-mono text-xs sm:text-sm">
+              <div class="flex items-center justify-between text-slate-200">
+                <span>Mensaje</span>
+                <span class="text-amber-300 font-bold"><i class="fa-solid fa-globe"></i> Pública</span>
+                <span class="text-emerald-400 font-bold">Token</span>
+              </div>
+              <div class="my-2 border-t border-dashed border-white/15"></div>
+              <div class="flex items-center justify-between text-slate-200">
+                <span class="text-emerald-400 font-bold">Token</span>
+                <span class="text-rose-400 font-bold"><i class="fa-solid fa-user-secret"></i> Privada</span>
+                <span>Mensaje</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] flex items-center justify-between text-xs sm:text-sm">
+            <span class="text-slate-300">Ejemplo: <strong class="text-white font-mono">RSA, ECC (Ed25519)</strong></span>
+            <span class="text-amber-300 font-bold"><i class="fa-solid fa-handshake mr-1"></i>Firmas</span>
+          </div>
+        </div>
+
+        <!-- Hashing -->
+        <div data-motion="slide-right" data-delay="250" class="motion-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-emerald-400 text-lg">
+                <i class="fa-solid fa-fingerprint"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-white/[0.08] text-emerald-300 font-bold border border-white/15">Irreversible</span>
+            </div>
+            <h3 class="font-display text-xl sm:text-2xl font-bold text-white">Funciones Hash</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Genera una <strong>huella digital fija</strong> sin clave de descifrado. Sirve para verificar integridad y almacenar contraseñas.
+            </p>
+
+            <div class="mt-4 p-3.5 rounded-xl bg-black/70 border border-white/[0.1] font-mono text-xs sm:text-sm">
+              <div class="flex items-center justify-between text-slate-200">
+                <span>"Texto"</span>
+                <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-right"></i> SHA-256</span>
+                <span class="text-sky-300 font-bold">8c6976...</span>
+              </div>
+              <div class="my-2 border-t border-dashed border-white/15"></div>
+              <div class="flex items-center justify-between text-slate-300 text-xs sm:text-sm">
+                <span class="text-rose-400 font-bold"><i class="fa-solid fa-ban"></i> Sin retorno</span>
+                <span class="text-emerald-300 font-bold">Integridad Pura</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] flex items-center justify-between text-xs sm:text-sm">
+            <span class="text-slate-300">Ejemplo: <strong class="text-white font-mono">SHA-256, Argon2id</strong></span>
+            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-double mr-1"></i>Integridad</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Diferencia fundamental -->
+      <div data-motion="fade-up" data-delay="300" class="mt-5 motion-card rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm sm:text-base text-slate-200">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-circle-info text-white text-lg"></i>
+          <span><strong>Diferencia clave:</strong> <code class="text-amber-300 font-mono">Base64</code> es una <em>codificación</em> (0% seguridad). La <em>encriptación</em> requiere una clave matemática secreta.</span>
+        </div>
+        <div class="font-mono text-xs sm:text-sm text-white px-3 py-1 rounded-lg bg-white/[0.1] border border-white/20 whitespace-nowrap font-bold">
+          Base64 &ne; Cifrado &ne; Hash
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         02. FUNCIONAMIENTO (PEPEM)
+    ========================================================== -->
+    <section id="funcionamiento" class="projector-section">
+      <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-white"></span> 02 &bull; Mecanismo Interno
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Funcionamiento de la Encriptación</h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+          El proceso secuencial paso a paso explicado de forma clara y directa para cualquier audiencia.
+        </p>
+      </div>
+
+      <!-- Explicación Conceptual Destacada -->
+      <div data-motion="fade-up" data-delay="100" class="motion-card p-6 sm:p-8 rounded-2xl mb-6 border-white/20">
+        <div class="flex items-start gap-4">
+          <div class="w-11 h-11 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center text-xl flex-shrink-0 border border-white/20 mt-1">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-white text-xl sm:text-2xl mb-2">¿Cómo Opera en Python?</h3>
+            <p class="text-slate-100 text-base sm:text-lg md:text-xl leading-relaxed">
+              En Python, el proceso funciona tomando el <strong>mensaje original</strong> y pasándolo a través de una <strong>librería de seguridad</strong> junto con una <strong>clave secreta</strong>, lo que transforma el texto normal en un <strong>resultado revuelto e ilegible</strong>.
+            </p>
+            <p class="text-slate-300 text-sm sm:text-base md:text-lg mt-3 leading-relaxed">
+              Esa librería se encarga de hacer todo el trabajo matemático por dentro para que no tengas que inventar nada complicado. Después, cuando alguien con permiso quiere leer el mensaje, vuelve a usar la misma clave para hacer el camino inverso y recuperar el texto original tal como estaba al principio.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagrama de Flujo Visual e Interactivo -->
+      <div data-motion="fade-up" data-delay="150" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+        <div class="motion-card p-4 rounded-xl text-center">
+          <div class="w-8 h-8 rounded-full bg-sky-500/20 text-sky-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-sky-500/30">1</div>
+          <div class="font-bold text-sm text-white">Mensaje Original</div>
+          <div class="text-xs font-mono text-sky-300 mt-1">"WiFi: 1234"</div>
+        </div>
+
+        <div class="motion-card p-4 rounded-xl text-center">
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-amber-500/30">2</div>
+          <div class="font-bold text-sm text-white">Clave Secreta</div>
+          <div class="text-xs font-mono text-amber-300 mt-1">Fernet.generate()</div>
+        </div>
+
+        <div class="motion-card p-4 rounded-xl text-center border-white/30">
+          <div class="w-8 h-8 rounded-full bg-white text-black mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold">3</div>
+          <div class="font-bold text-sm text-white">Caja Fernet</div>
+          <div class="text-xs font-mono text-slate-300 mt-1">caja.encrypt()</div>
+        </div>
+
+        <div class="motion-card p-4 rounded-xl text-center">
+          <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-rose-500/30">4</div>
+          <div class="font-bold text-sm text-white">Texto Ilegible</div>
+          <div class="text-xs font-mono text-rose-300 mt-1">gAAAAABm9xQ...</div>
+        </div>
+
+        <div class="motion-card p-4 rounded-xl text-center">
+          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-emerald-500/30">5</div>
+          <div class="font-bold text-sm text-white">Recuperación</div>
+          <div class="text-xs font-mono text-emerald-300 mt-1">caja.decrypt()</div>
+        </div>
+      </div>
+
+      <!-- Consola Interactiva con el Código Exacto -->
+      <div data-motion="scale-up" data-delay="200" class="terminal-window rounded-2xl flex flex-col overflow-hidden">
+        <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-full bg-rose-500/80"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-amber-400/80"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500/80"></span>
+            <span class="ml-2 font-mono text-xs sm:text-sm text-white font-bold">ejemplo_pepem_wifi.py</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="runPepemDemoLive()" class="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <i class="fa-solid fa-play text-xs"></i>
+              <span>Ejecutar Código en Vivo</span>
+            </button>
+            <button onclick="copyToClipboard(pepemCodeText, 'Código copiado')" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-white font-mono text-xs transition cursor-pointer">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.1]">
+          <!-- Código Python Original -->
+          <pre class="p-5 sm:p-6 text-xs sm:text-sm md:text-base font-mono leading-relaxed overflow-x-auto text-slate-100"><code><span class="py-kw">from</span> cryptography.fernet <span class="py-kw">import</span> <span class="py-cls">Fernet</span>
+
+<span class="py-cm"># 1. Generar la llave secreta</span>
+llave = <span class="py-cls">Fernet</span>.<span class="py-fn">generate_key</span>()
+caja = <span class="py-cls">Fernet</span>(llave)
+
+<span class="py-cm"># 2. Cifrar el texto original (en bytes)</span>
+secreto_oculto = caja.<span class="py-fn">encrypt</span>(<span class="py-bytes">b"Mi clave del WiFi es 1234"</span>)
+<span class="py-fn">print</span>(<span class="py-str">"Asi se ve encriptado:"</span>, secreto_oculto)
+
+<span class="py-cm"># 3. Descifrar y recuperar el original</span>
+secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
+<span class="py-fn">print</span>(<span class="py-str">"Asi vuelve a verse:"</span>, secreto_abierto.<span class="py-fn">decode</span>())</code></pre>
+
+          <!-- Consola de Salida en Vivo -->
+          <div class="p-5 sm:p-6 bg-black/90 font-mono text-xs sm:text-sm flex flex-col justify-between">
+            <div>
+              <div class="text-slate-400 mb-3 flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                <span>Salida de Consola (Python 3.12)</span>
+                <span id="pepemExecBadge" class="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listo para ejecutar
+                </span>
+              </div>
+              <div id="pepemConsoleOutput" class="space-y-3">
+                <div class="text-slate-300">
+                  <span class="text-sky-300">$</span> python ejemplo_pepem_wifi.py
+                </div>
+                <div class="text-slate-400 text-xs italic">
+                  Presiona el botón verde "Ejecutar Código en Vivo" para ver la transformación criptográfica en tiempo real.
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs text-slate-400">
+              <span class="text-white font-bold">Nota técnica:</span> Fernet genera un vector IV aleatorio en cada ejecución, por lo que el texto encriptado cambia siempre aunque el mensaje sea idéntico.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         03. CARACTERÍSTICAS
+    ========================================================== -->
+    <section id="caracteristicas" class="projector-section">
+      <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-white"></span> 03 &bull; Capacidades de Python
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Características de la Encriptación en Python</h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+          Los 7 pilares esenciales que definen la seguridad criptográfica en el ecosistema de Python.
+        </p>
+      </div>
+
+      <!-- Cuadrícula de las 7 Características Clave -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        
+        <!-- 1. Confidencialidad -->
+        <div data-motion="fade-up" data-delay="50" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 text-lg">
+                <i class="fa-solid fa-user-lock"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-sky-300 font-bold border border-white/10">01. Acceso</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">1. Confidencialidad</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Protege la información para que solo personas autorizadas puedan acceder a ella.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-sky-300 font-semibold">
+            Principio: Privacidad Absoluta
+          </div>
+        </div>
+
+        <!-- 2. Algoritmos de cifrado -->
+        <div data-motion="fade-up" data-delay="100" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+                <i class="fa-solid fa-calculator"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-purple-300 font-bold border border-white/10">02. Motores</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">2. Algoritmos de Cifrado</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Utiliza métodos como AES y RSA para convertir datos en códigos ilegibles.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-purple-300 font-semibold">
+            Estándares: AES-256, RSA-2048
+          </div>
+        </div>
+
+        <!-- 3. Claves de seguridad -->
+        <div data-motion="fade-up" data-delay="150" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-amber-300 font-bold border border-white/10">03. Control</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">3. Claves de Seguridad</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Utiliza claves para cifrar y descifrar mensajes de forma segura.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-amber-300 font-semibold">
+            Generación: Entropía segura (os.urandom)
+          </div>
+        </div>
+
+        <!-- 4. Protección de datos -->
+        <div data-motion="fade-up" data-delay="200" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-emerald-300 font-bold border border-white/10">04. Cobertura</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">4. Protección de Datos</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Permite proteger contraseñas, archivos y mensajes privados.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-emerald-300 font-semibold">
+            Alcance: Reposo y Tránsito
+          </div>
+        </div>
+
+        <!-- 5. Cifrado y descifrado -->
+        <div data-motion="fade-up" data-delay="250" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 text-lg">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-teal-300 font-bold border border-white/10">05. Ciclo</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">5. Cifrado y Descifrado</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Transforma información legible en códigos y permite recuperar el mensaje original.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-teal-300 font-semibold">
+            Operación: Bidireccional reversible
+          </div>
+        </div>
+
+        <!-- 6. Integridad -->
+        <div data-motion="fade-up" data-delay="300" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-lg">
+                <i class="fa-solid fa-check-double"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-rose-300 font-bold border border-white/10">06. Control</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg sm:text-xl">6. Integridad</h3>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Permite detectar modificaciones no autorizadas en la información mediante mecanismos criptográficos.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-rose-300 font-semibold">
+            Mecanismo: HMAC, Firmas, Hashes
+          </div>
+        </div>
+
+        <!-- 7. Librerías de Python -->
+        <div data-motion="fade-up" data-delay="350" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 md:col-span-2 lg:col-span-3 border-white/20">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 text-2xl flex-shrink-0">
+              <i class="fa-brands fa-python"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-amber-300 font-bold">07. Ecosistema</span>
+                <h3 class="font-display font-bold text-white text-lg sm:text-xl">7. Librerías de Python</h3>
+              </div>
+              <p class="text-slate-200 text-sm sm:text-base mt-1 leading-relaxed">
+                Utiliza herramientas como <strong class="text-white font-mono">Cryptography</strong> y <strong class="text-white font-mono">PyCryptodome</strong> para facilitar el cifrado.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-xs text-slate-300 whitespace-nowrap">
+            <span class="px-3 py-1.5 rounded-lg bg-black border border-white/20 text-emerald-400 font-bold">pip install cryptography pycryptodome</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         04. APLICACIONES
+    ========================================================== -->
+    <section id="aplicaciones" class="projector-section">
+      <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-white"></span> 04 &bull; Mundo Real
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Aplicaciones en la Industria</h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+          Cómo se implementa la criptografía en sistemas de producción reales con Python.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        
+        <div data-motion="fade-up" data-delay="100" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-emerald-400 text-lg">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-emerald-300 font-bold">Argon2 / bcrypt</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Contraseñas en Backend</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Django y FastAPI usan funciones de derivación lentas con sal individual por usuario para neutralizar ataques de fuerza bruta con GPU.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-emerald-300 font-bold">passlib / argon2-cffi</span>
+          </div>
+        </div>
+
+        <div data-motion="fade-up" data-delay="150" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-sky-400 text-lg">
+                <i class="fa-solid fa-globe"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-sky-300 font-bold">HTTPS / TLS 1.3</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Canales Seguros & APIs</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Cifrado híbrido en microservicios: Handshake asimétrico (ECDH) para acordar una clave simétrica AES-GCM ultrarrápida.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-sky-300 font-bold">ssl / httpx / certifi</span>
+          </div>
+        </div>
+
+        <div data-motion="fade-up" data-delay="200" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-amber-300 text-lg">
+                <i class="fa-solid fa-database"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-amber-300 font-bold">Fernet / AES</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Backups en Cloud S3</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Cifrado del lado del cliente antes de enviar copias de seguridad a AWS S3 o GCP. Cumplimiento normativo HIPAA y GDPR.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-amber-300 font-bold">cryptography + boto3</span>
+          </div>
+        </div>
+
+        <div data-motion="fade-up" data-delay="250" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-purple-300 text-lg">
+                <i class="fa-solid fa-signature"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-purple-300 font-bold">JWT / HMAC</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Tokens y Firmas Digitales</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Autenticación stateless para microservicios. Las firmas criptográficas impiden que un cliente altere sus roles o permisos.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-purple-300 font-bold">PyJWT / authlib</span>
+          </div>
+        </div>
+
+        <div data-motion="fade-up" data-delay="300" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-teal-300 text-lg">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-teal-300 font-bold">End-to-End</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Mensajería Cifrada E2EE</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Protocolos tipo Signal (Double Ratchet): ni los servidores intermediarios poseen la clave para inspeccionar el chat.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-teal-300 font-bold">PyNaCl / Curve25519</span>
+          </div>
+        </div>
+
+        <div data-motion="fade-up" data-delay="350" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.1] border border-white/20 flex items-center justify-center text-rose-300 text-lg">
+                <i class="fa-solid fa-code-branch"></i>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-rose-300 font-bold">Merkle Trees</span>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl">Control de Versiones (Git)</h4>
+            <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
+              Cada commit de Git se identifica por el hash de su contenido. Modificar un solo carácter del pasado rompe toda la cadena.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-slate-300">
+            Librería: <span class="text-rose-300 font-bold">hashlib / sha256</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         05. DEMO (LABORATORIO EN VIVO)
+    ========================================================== -->
+    <section id="demo" class="projector-section">
+      <div data-motion="fade-up" class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-white"></span> 05 &bull; Laboratorio DEMO
+          </span>
+          <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">DEMO: Laboratorio en Vivo</h2>
+          <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1">
+            Ejecuta algoritmos reales dentro de tu navegador y obtén el script Python generado en tiempo real.
+          </p>
+        </div>
+
+        <!-- Selector de Módulo -->
+        <div class="bg-black border border-white/20 p-1.5 rounded-xl flex items-center gap-1">
+          <button id="demoBtnSym" onclick="switchDemoModule('symmetric')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer">
+            <i class="fa-solid fa-key mr-1.5"></i>Simétrico (AES-256)
+          </button>
+          <button id="demoBtnHash" onclick="switchDemoModule('hash')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
+            <i class="fa-solid fa-fingerprint mr-1.5"></i>Hash (SHA-256)
+          </button>
+          <button id="demoBtnCaesar" onclick="switchDemoModule('caesar')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
+            <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>César (Didáctico)
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        <!-- Panel Izquierdo: Controles -->
+        <div data-motion="slide-left" data-delay="100" class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
+          
+          <!-- Entrada de Mensaje -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label for="labInputText" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold">
+                1. Mensaje de Entrada (Texto Plano)
+              </label>
+              <span id="labCharCounter" class="text-xs font-mono text-slate-300">25 caracteres</span>
+            </div>
+            <textarea id="labInputText" rows="2" oninput="handleLabInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none p-3.5 text-sm sm:text-base text-white font-mono resize-none shadow-inner" placeholder="Escribe un mensaje secreto...">Mi clave del WiFi es 1234</textarea>
+          </div>
+
+          <!-- MÓDULO 1: SIMÉTRICO AES -->
+          <div id="labModuleSymmetric" class="space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="labPassword" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold">
+                  2. Contraseña o Clave Secreta
+                </label>
+                <button onclick="generateRandomLabKey()" class="text-xs sm:text-sm font-mono text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1.5 cursor-pointer">
+                  <i class="fa-solid fa-dice"></i> Nueva Clave Aleatoria
+                </button>
+              </div>
+              <input id="labPassword" type="text" value="SuperClaveSegura#Python" oninput="handleLabInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none px-4 py-2.5 text-sm sm:text-base font-mono text-amber-300">
+              
+              <!-- Medidor de Entropía y Fortaleza de Clave Dinámico -->
+              <div class="mt-2.5 flex items-center justify-between gap-3 text-xs font-mono">
+                <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex gap-1">
+                  <div id="pwdEntropyBar1" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
+                  <div id="pwdEntropyBar2" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
+                  <div id="pwdEntropyBar3" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
+                  <div id="pwdEntropyBar4" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
+                </div>
+                <span id="pwdEntropyLabel" class="text-emerald-400 font-bold">Fuerza Militar (AES-256)</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button onclick="encryptAesLab()" class="flex-1 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm sm:text-base hover:bg-slate-200 transition cursor-pointer flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock"></i>
+                <span>Encriptar (AES-GCM)</span>
+              </button>
+              <button onclick="decryptAesLab()" class="flex-1 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base transition cursor-pointer flex items-center justify-center gap-2">
+                <i class="fa-solid fa-unlock"></i>
+                <span>Descifrar Token</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- MÓDULO 2: HASH SHA-256 -->
+          <div id="labModuleHash" class="hidden space-y-3.5">
+            <div class="p-4 rounded-xl bg-white/[0.08] border border-white/20 text-sm sm:text-base text-slate-200 leading-relaxed">
+              <strong>Efecto Avalancha en tiempo real:</strong> Modifica un solo carácter arriba y observa cómo cambia más del 40% al 60% del digest SHA-256 de 256 bits.
+            </div>
+            <div class="p-3.5 rounded-xl bg-black/80 border border-white/15 flex items-center justify-between text-xs sm:text-sm font-mono">
+              <span class="text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i> Mutación de Salida:
+              </span>
+              <span id="labAvalancheStat" class="text-emerald-300 font-bold">0% de caracteres mutaron</span>
+            </div>
+            <div class="flex items-center justify-between text-xs sm:text-sm font-mono text-slate-300 font-semibold">
+              <span>Longitud: <strong class="text-emerald-400 font-bold">256 bits (64 hex)</strong></span>
+              <span>Propiedad: <strong class="text-white font-bold">Resistencia a colisiones</strong></span>
+            </div>
+          </div>
+
+          <!-- MÓDULO 3: CÉSAR -->
+          <div id="labModuleCaesar" class="hidden space-y-3.5">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="labCaesarShift" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold">
+                  Desplazamiento del Alfabeto (Shift K): <span id="labCaesarShiftVal" class="text-amber-300 font-extrabold text-base">3</span>
+                </label>
+              </div>
+              <input id="labCaesarShift" type="range" min="1" max="25" value="3" oninput="handleCaesarShiftChange()" class="w-full accent-white cursor-pointer h-2.5">
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/[0.08] border border-white/20 text-xs sm:text-sm text-purple-200">
+              Cifrado clásico por sustitución monoalfabética. Inseguro para uso real, excelente para ilustrar el concepto matemático de desplazamiento algorítmico.
+            </div>
+          </div>
+
+          <!-- Salida Criptográfica -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span id="labOutputLabel" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                3. Resultado Cifrado (Token Base64)
+              </span>
+              <span id="labStatusBadge" class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-white border border-white/20 font-bold">
+                AES-GCM 256-bit
+              </span>
+            </div>
+            <div id="labOutputBox" class="w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-emerald-300 break-all select-all shadow-inner">
+              Procesando...
+            </div>
+            <div id="labFeedbackMsg" class="mt-2 text-xs sm:text-sm font-semibold min-h-[1.4rem]"></div>
+          </div>
+
+        </div>
+
+        <!-- Panel Derecho: Código Python Dinámico -->
+        <div data-motion="slide-right" data-delay="150" class="lg:col-span-6 terminal-window rounded-2xl flex flex-col overflow-hidden">
+          <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-brands fa-python text-amber-400 text-lg"></i>
+              <span class="font-mono text-xs sm:text-sm text-slate-200 font-bold">Script Python Dinámico (En Vivo)</span>
+            </div>
+            <button onclick="copyDynamicLabPythonCode()" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-xs sm:text-sm font-mono text-white flex items-center gap-2 transition cursor-pointer font-bold">
+              <i class="fa-regular fa-copy"></i> Copiar
+            </button>
+          </div>
+          <pre id="labDynamicPythonCode" class="p-5 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed overflow-auto flex-1 text-slate-100"></pre>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         06. CONCLUSIONES (TEXTO EXACTO DEL USUARIO + QUIZ)
+    ========================================================== -->
+    <section id="conclusiones" class="projector-section">
+      <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-white"></span> 06 &bull; Conclusiones Clave
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Conclusiones</h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+          Ideas centrales y reflexiones sobre la encriptación y su aplicación con Python.
+        </p>
+      </div>
+
+      <!-- 4 Bloques de Conclusiones Exactas del Usuario -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+        
+        <!-- Conclusión 1 -->
+        <div data-motion="fade-up" data-delay="100" class="motion-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 text-lg mb-3">
+              <i class="fa-solid fa-globe"></i>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl mb-2">Esencial en el Mundo Digital</h4>
+            <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+              La encriptación es esencial para proteger la información en el mundo digital. Con algoritmos como AES y RSA, y librerías como Cryptography y PyCryptodome, Python permite cifrar contraseñas, archivos y mensajes sin implementar matemáticas complejas desde cero.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-sky-300 font-bold">
+            Pilar: Algoritmos Estándar & Productividad
+          </div>
+        </div>
+
+        <!-- Conclusión 2 -->
+        <div data-motion="fade-up" data-delay="150" class="motion-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg mb-3">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl mb-2">Confidencialidad e Integridad</h4>
+            <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+              El cifrado garantiza la confidencialidad, ya que solo quien tiene la clave correcta puede recuperar el mensaje, y la integridad, al detectar modificaciones no autorizadas. Esto es clave en la banca en línea, la mensajería privada y el almacenamiento de datos personales.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-emerald-300 font-bold">
+            Pilar: Privacidad + No Manipulación
+          </div>
+        </div>
+
+        <!-- Conclusión 3 -->
+        <div data-motion="fade-up" data-delay="200" class="motion-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg mb-3">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl mb-2">Gestión de Claves y Buenas Prácticas</h4>
+            <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+              Sin embargo, la seguridad depende también de la gestión de claves: una clave expuesta compromete todo el sistema. Por eso conviene usar librerías reconocidas en lugar de crear algoritmos propios.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-amber-300 font-bold">
+            Pilar: Protección de Claves & Cero Cripto Casera
+          </div>
+        </div>
+
+        <!-- Conclusión 4 -->
+        <div data-motion="fade-up" data-delay="250" class="motion-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg mb-3">
+              <i class="fa-brands fa-python"></i>
+            </div>
+            <h4 class="font-display font-bold text-white text-lg sm:text-xl mb-2">Herramientas Poderosas y Accesibles</h4>
+            <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+              En resumen, Python ofrece herramientas poderosas y accesibles para cifrar información, pero su uso efectivo exige entender tanto la teoría como las buenas prácticas de seguridad.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-purple-300 font-bold">
+            Pilar: Dominio Teórico + Implementación Práctica
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quiz Interactivo para la Audiencia -->
+      <div data-motion="fade-up" data-delay="300" class="mb-8">
+        <h3 class="font-display font-bold text-white text-xl sm:text-2xl mb-4 text-center sm:text-left">
+          <i class="fa-solid fa-circle-question text-amber-300 mr-2"></i>Evaluación Rápida con la Audiencia
+        </h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          
+          <!-- Pregunta 1 -->
+          <div class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-white border border-white/20 font-bold">Pregunta 1</span>
+              <h4 class="font-display font-bold text-white text-base sm:text-lg mt-3">
+                ¿Qué ocurre si se pierde la clave secreta de un archivo cifrado?
+              </h4>
+              <div class="mt-4 space-y-2.5 text-xs sm:text-sm">
+                <button onclick="handleQuizAnswer(1, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  A) El archivo se hace público de inmediato.
+                </button>
+                <button onclick="handleQuizAnswer(1, true, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  B) Es matemáticamente irrecuperable sin la clave.
+                </button>
+                <button onclick="handleQuizAnswer(1, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  C) Python adivina la clave automáticamente.
+                </button>
+              </div>
+            </div>
+            <div id="quizFeedback1" class="mt-3.5 text-xs sm:text-sm font-bold min-h-[1.5rem]"></div>
+          </div>
+
+          <!-- Pregunta 2 -->
+          <div class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-amber-300 border border-white/20 font-bold">Pregunta 2</span>
+              <h4 class="font-display font-bold text-white text-base sm:text-lg mt-3">
+                ¿Por qué no se deben inventar algoritmos de cifrado propios?
+              </h4>
+              <div class="mt-4 space-y-2.5 text-xs sm:text-sm">
+                <button onclick="handleQuizAnswer(2, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  A) Porque Python cobra licencia por algoritmos nuevos.
+                </button>
+                <button onclick="handleQuizAnswer(2, true, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  B) Suelen tener fallas matemáticas sutiles; se deben usar librerías probadas.
+                </button>
+                <button onclick="handleQuizAnswer(2, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  C) Solo se pueden crear en lenguaje Ensamblador.
+                </button>
+              </div>
+            </div>
+            <div id="quizFeedback2" class="mt-3.5 text-xs sm:text-sm font-bold min-h-[1.5rem]"></div>
+          </div>
+
+          <!-- Pregunta 3 -->
+          <div class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-emerald-300 border border-white/20 font-bold">Pregunta 3</span>
+              <h4 class="font-display font-bold text-white text-base sm:text-lg mt-3">
+                ¿Qué propiedad permite verificar que nadie alteró un mensaje cifrado?
+              </h4>
+              <div class="mt-4 space-y-2.5 text-xs sm:text-sm">
+                <button onclick="handleQuizAnswer(3, true, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  A) La Integridad (mediante HMAC o tags criptográficos).
+                </button>
+                <button onclick="handleQuizAnswer(3, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  B) La velocidad de descarga del servidor.
+                </button>
+                <button onclick="handleQuizAnswer(3, false, this)" class="w-full text-left p-3 rounded-xl bg-black border border-white/15 text-slate-200 hover:border-white/40 transition cursor-pointer font-medium">
+                  C) El tamaño del archivo en gigabytes.
+                </button>
+              </div>
+            </div>
+            <div id="quizFeedback3" class="mt-3.5 text-xs sm:text-sm font-bold min-h-[1.5rem]"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Banner de Cierre -->
+      <div data-motion="scale-up" data-delay="350" class="motion-card p-6 sm:p-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-5 border-white/20">
+        <div>
+          <h3 class="font-display font-extrabold text-2xl sm:text-3xl text-white">¡Muchas gracias por su atención!</h3>
+          <p class="text-slate-200 text-sm sm:text-base mt-1">¿Preguntas de la audiencia o desean probar otro caso en la DEMO?</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#demo" class="px-5 py-3 rounded-xl bg-white text-black font-bold text-sm sm:text-base hover:bg-slate-200 transition shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+            <i class="fa-solid fa-flask mr-2 text-black"></i>Ir a la DEMO
+          </a>
+          <button onclick="scrollToTop()" class="px-5 py-3 rounded-xl bg-deep-800 hover:bg-deep-700 border border-white/20 text-white text-sm sm:text-base font-bold transition cursor-pointer">
+            <i class="fa-solid fa-rotate-left mr-2"></i>Reiniciar
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- =========================================================
+       FOOTER ELEGANTE SOBRE FONDO NEGRO PURO
+  ========================================================== -->
+  <footer class="relative z-10 w-full px-5 sm:px-8 py-8 border-t border-white/[0.08] bg-black text-slate-300 text-xs sm:text-sm mt-16">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <i class="fa-brands fa-python text-amber-400 text-base"></i>
+        <span>Python & Encriptación &bull; Exposición Oficial para Proyector</span>
+      </div>
+      <div class="flex items-center gap-4 font-mono text-slate-400 text-xs">
+        <span>AES-256</span>
+        <span>&bull;</span>
+        <span>RSA</span>
+        <span>&bull;</span>
+        <span>Fernet</span>
+        <span>&bull;</span>
+        <span>PyCryptodome</span>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =========================================================
+       SCRIPTS: PANTALLA COMPLETA, NAVEGACIÓN TECLADO & DEMO
+  ========================================================== -->
+  <script>
+    // =========================================================
+    // NAVEGACIÓN Y CONFIGURACIÓN DE SECCIONES (PROYECTOR HUD)
+    // =========================================================
+    const sectionIds = ['hero', 'conceptos', 'funcionamiento', 'caracteristicas', 'aplicaciones', 'demo', 'conclusiones'];
+    const sectionTitles = {
+      'hero': 'Portada',
+      'conceptos': 'Conceptos',
+      'funcionamiento': 'Funcionamiento',
+      'caracteristicas': 'Características',
+      'aplicaciones': 'Aplicaciones',
+      'demo': 'DEMO en Vivo',
+      'conclusiones': 'Conclusiones'
+    };
+
+    function getCurrentSectionIndex() {
+      const scrollPos = window.scrollY + 180;
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && scrollPos >= el.offsetTop) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    function goToNextSection() {
+      const cur = getCurrentSectionIndex();
+      if (cur < sectionIds.length - 1) {
+        const target = document.getElementById(sectionIds[cur + 1]);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function goToPrevSection() {
+      const cur = getCurrentSectionIndex();
+      if (cur > 0) {
+        const target = document.getElementById(sectionIds[cur - 1]);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // =========================================================
+    // PANTALLA COMPLETA NATIVA (FULLSCREEN API)
+    // =========================================================
+    function toggleFullscreen() {
+      const icon = document.getElementById('fullscreenIcon');
+
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          if (icon) icon.className = 'fa-solid fa-compress text-xs';
+          showToast("Modo Proyector Pantalla Completa activo");
+        }).catch(() => {
+          showToast("Usa F11 en tu navegador");
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            if (icon) icon.className = 'fa-solid fa-expand text-xs';
+            showToast("Pantalla completa cerrada");
+          });
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('fullscreenIcon');
+      if (document.fullscreenElement) {
+        if (icon) icon.className = 'fa-solid fa-compress text-xs';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-expand text-xs';
+      }
+    });
+
+    // =========================================================
+    // SPOTLIGHT INTERACTIVO EN TARJETAS (CURSORES DINÁMICOS)
+    // =========================================================
+    document.addEventListener('pointermove', (e) => {
+      document.querySelectorAll('.motion-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    // =========================================================
+    // FONDO DE PARTÍCULAS CRIPTOGRÁFICAS EN CANVAS VIVO
+    // =========================================================
+    function initCryptoCanvas() {
+      const canvas = document.getElementById('cryptoCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      const glyphs = ['0', '1', '0x1F', '0xFA', 'AES', 'RSA', 'Fernet', 'KEY', 'PyCrypto', 'GCM', 'b""', 'HMAC', 'SHA-256'];
+      const mouse = { x: -9999, y: -9999, radius: 120 };
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      window.addEventListener('pointermove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      window.addEventListener('pointerleave', () => {
+        mouse.x = -9999;
+        mouse.y = -9999;
+      });
+
+      const count = Math.min(36, Math.max(16, Math.floor((window.innerWidth * window.innerHeight) / 34000)));
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          char: glyphs[Math.floor(Math.random() * glyphs.length)],
+          size: 9 + Math.random() * 4,
+          alpha: 0.12 + Math.random() * 0.15,
+          pulse: Math.random() * Math.PI * 2
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 * (1 - dist / 110)})`;
+              ctx.lineWidth = 0.6;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.pulse += 0.02;
+
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouse.radius) {
+            const angle = Math.atan2(dy, dx);
+            const force = (mouse.radius - dist) / mouse.radius;
+            p.x += Math.cos(angle) * force * 1.5;
+            p.y += Math.sin(angle) * force * 1.5;
+          }
+
+          if (p.x < -20) p.x = width + 20;
+          if (p.x > width + 20) p.x = -20;
+          if (p.y < -20) p.y = height + 20;
+          if (p.y > height + 20) p.y = -20;
+
+          const dynAlpha = p.alpha + Math.sin(p.pulse) * 0.04;
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.04, dynAlpha)})`;
+          ctx.font = `${p.size}px "JetBrains Mono", monospace`;
+          ctx.fillText(p.char, p.x, p.y);
+        });
+
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    // =========================================================
+    // MOTOR DE ANIMACIONES INTERSECTION OBSERVER
+    // =========================================================
+    const motionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    document.querySelectorAll('[data-motion]').forEach(el => {
+      motionObserver.observe(el);
+    });
+
+    // =========================================================
+    // SCROLLSPY Y CONTADOR HUD
+    // =========================================================
+    const sections = document.querySelectorAll('section[id]');
+    
+    window.addEventListener('scroll', () => {
+      let currentSectionId = '';
+      const scrollPos = window.scrollY + 180;
+
+      sections.forEach(section => {
+        const top = section.offsetTop;
+        const height = section.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+          currentSectionId = section.getAttribute('id');
+        }
+      });
+
+
+
+
+    });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================
+    // TOAST NOTIFICATION
+    // =========================================================
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      if (!toast || !toastMsg) return;
+      toastMsg.textContent = msg;
+      toast.classList.remove('translate-y-12', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-12', 'opacity-0');
+      }, 2500);
+    }
+
+    function copyToClipboard(text, successMsg = "Copiado al portapapeles") {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMsg);
+      } catch (err) {
+        showToast("Error al copiar");
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // =========================================================
+    // HERO TERMINAL MORPH CIPHER
+    // =========================================================
+    const heroChars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz0123456789+/=';
+    let heroPlain = "Mi clave del WiFi es 1234";
+    let heroCipher = "gAAAAABm9xQ2+kP7vL3h8k9Z0v1y2A3B4C5D6E7F8==";
+    let heroIsPlain = true;
+    let heroMorphTimer = null;
+
+    function triggerHeroMorph() {
+      const el = document.getElementById('heroCipherDisplay');
+      const stateEl = document.getElementById('heroCipherState');
+      if (!el || !stateEl) return;
+
+      heroIsPlain = !heroIsPlain;
+      const targetText = heroIsPlain ? heroPlain : heroCipher;
+
+      stateEl.innerHTML = heroIsPlain 
+        ? '<i class="fa-solid fa-lock-open text-xs"></i> Texto Plano Original (Legible)'
+        : '<i class="fa-solid fa-lock text-xs text-amber-400"></i> Texto Cifrado con Fernet';
+      stateEl.className = heroIsPlain ? "text-emerald-400 flex items-center gap-2 font-bold" : "text-amber-300 flex items-center gap-2 font-bold";
+
+      let t = 0;
+      const len = targetText.length;
+      clearInterval(heroMorphTimer);
+      heroMorphTimer = setInterval(() => {
+        t++;
+        let s = '';
+        for (let i = 0; i < len; i++) {
+          s += (i < t / 2) ? targetText[i] : heroChars[Math.floor(Math.random() * heroChars.length)];
+        }
+        el.textContent = s;
+        if (t / 2 >= len) {
+          clearInterval(heroMorphTimer);
+          el.textContent = targetText;
+        }
+      }, 35);
+    }
+
+    // =========================================================
+    // DEMO INTERACTIVA PEPEM (WIFI PASSWORD)
+    // =========================================================
+    const pepemCodeText = `from cryptography.fernet import Fernet
+
+llave = Fernet.generate_key()
+caja = Fernet(llave)
+
+secreto_oculto = caja.encrypt(b"Mi clave del WiFi es 1234")
+print("Asi se ve encriptado:", secreto_oculto)
+
+secreto_abierto = caja.decrypt(secreto_oculto)
+print("Asi vuelve a verse:", secreto_abierto.decode())`;
+
+    let pepemIsRunning = false;
+    function runPepemDemoLive() {
+      if (pepemIsRunning) return;
+      pepemIsRunning = true;
+      const out = document.getElementById('pepemConsoleOutput');
+      const badge = document.getElementById('pepemExecBadge');
+      if (!out) return;
+
+      badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-amber-300"></i> Ejecutando criptografía...';
+      badge.className = 'text-amber-300 font-bold flex items-center gap-1.5';
+
+      out.innerHTML = `
+        <div class="text-slate-300"><span class="text-sky-300">$</span> python ejemplo_pepem_wifi.py</div>
+        <div class="text-slate-400 text-xs italic">[1/3] Generando llave simétrica de 256 bits...</div>
+      `;
+
+      setTimeout(() => {
+        const mockKey = "Fernet.generate_key() -> b'" + arrayBufferToBase64(window.crypto.getRandomValues(new Uint8Array(32))) + "'";
+        const mockToken = "gAAAAAB" + arrayBufferToBase64(window.crypto.getRandomValues(new Uint8Array(48)));
+
+        out.innerHTML = `
+          <div class="text-slate-300"><span class="text-sky-300">$</span> python ejemplo_pepem_wifi.py</div>
+          <div class="text-slate-400 text-xs py-1 border-b border-white/[0.06]"><i class="fa-solid fa-key text-amber-300 mr-1.5"></i>Llave generada: <span class="text-amber-200">${mockKey.slice(0, 38)}...</span></div>
+          <div class="text-rose-300 font-bold mt-2">Asi se ve encriptado:</div>
+          <div class="text-amber-300 bg-black p-2.5 rounded-lg border border-white/10 break-all select-all font-mono text-xs">${mockToken}</div>
+          <div class="text-emerald-400 font-bold mt-2">Asi vuelve a verse:</div>
+          <div class="text-white bg-black p-2.5 rounded-lg border border-emerald-500/30 font-bold text-sm">"Mi clave del WiFi es 1234"</div>
+        `;
+
+        badge.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Ejecución completada';
+        badge.className = 'text-emerald-400 font-bold flex items-center gap-1.5';
+        pepemIsRunning = false;
+        showToast("Demostración WiFi ejecutada con éxito");
+      }, 700);
+    }
+
+    // =========================================================
+    // MEDIDOR DE ENTROPÍA DE CONTRASEÑA EN TIEMPO REAL
+    // =========================================================
+    function updatePasswordEntropy(password) {
+      let score = 0;
+      if (password.length >= 8) score++;
+      if (password.length >= 14) score++;
+      if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+      if (/[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) score++;
+
+      const bars = [
+        document.getElementById('pwdEntropyBar1'),
+        document.getElementById('pwdEntropyBar2'),
+        document.getElementById('pwdEntropyBar3'),
+        document.getElementById('pwdEntropyBar4')
+      ];
+      const label = document.getElementById('pwdEntropyLabel');
+      if (!bars[0] || !label) return;
+
+      const configs = [
+        { label: 'Muy Débil (< 24 bits)', color: 'bg-rose-500', text: 'text-rose-400' },
+        { label: 'Fuerza Débil (40 bits)', color: 'bg-rose-400', text: 'text-rose-400' },
+        { label: 'Fuerza Media (64 bits)', color: 'bg-amber-400', text: 'text-amber-300' },
+        { label: 'Fuerza Robusta (96 bits)', color: 'bg-emerald-400', text: 'text-emerald-400' },
+        { label: 'Fuerza Militar (128+ bits PBKDF2)', color: 'bg-emerald-400', text: 'text-emerald-300' }
+      ];
+
+      const cfg = configs[Math.min(4, Math.max(0, score))];
+      label.textContent = cfg.label;
+      label.className = `${cfg.text} font-bold`;
+
+      bars.forEach((bar, idx) => {
+        if (bar) {
+          bar.className = 'h-full flex-1 rounded-full transition-all duration-300 ' + (idx <= score - 1 ? cfg.color : 'bg-white/10');
+        }
+      });
+    }
+
+    // =========================================================
+    // LABORATORIO CRIPTOGRÁFICO EN EL NAVEGADOR (WEB CRYPTO API)
+    // =========================================================
+    let currentLabMode = 'symmetric';
+    let labLastCipherToken = "";
+    let lastSha256Digest = "";
+    const textEncoder = new TextEncoder();
+    const textDecoder = new TextDecoder();
+
+    function arrayBufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+
+    function base64ToUint8Array(base64) {
+      const binary = atob(base64.trim());
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    async function deriveKeyFromPassword(password, salt) {
+      const imported = await window.crypto.subtle.importKey(
+        'raw',
+        textEncoder.encode(password),
+        'PBKDF2',
+        false,
+        ['deriveKey']
+      );
+      return window.crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: 200000, hash: 'SHA-256' },
+        imported,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    function generateRandomLabKey() {
+      const keys = ['SecurityMaster#2026', 'ZeroTrustPython!99', 'CryptographicKey$42', 'QuantumGuard*88', 'AlphaCipher#X99'];
+      const chosen = keys[Math.floor(Math.random() * keys.length)];
+      const pwdInput = document.getElementById('labPassword');
+      if (pwdInput) {
+        pwdInput.value = chosen;
+        updatePasswordEntropy(chosen);
+        showToast("Nueva clave aleatoria generada");
+        encryptAesLab();
+      }
+    }
+
+    function playDecodeWave(finalText, targetEl, onComplete) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+      let iter = 0;
+      const maxIter = 5;
+      const len = Math.min(finalText.length, 64);
+      const timer = setInterval(() => {
+        iter++;
+        let scrambled = '';
+        for (let i = 0; i < len; i++) {
+          scrambled += chars[Math.floor(Math.random() * chars.length)];
+        }
+        targetEl.textContent = scrambled;
+        if (iter >= maxIter) {
+          clearInterval(timer);
+          targetEl.textContent = finalText;
+          if (onComplete) onComplete();
+        }
+      }, 25);
+    }
+
+    async function encryptAesLab() {
+      try {
+        const text = document.getElementById('labInputText').value;
+        const password = document.getElementById('labPassword').value;
+        const feedback = document.getElementById('labFeedbackMsg');
+
+        updatePasswordEntropy(password);
+
+        if (!text || !password) {
+          if (feedback) {
+            feedback.textContent = "Ingresa texto y contraseña.";
+            feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
+          }
+          return;
+        }
+
+        const salt = window.crypto.getRandomValues(new Uint8Array(16));
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveKeyFromPassword(password, salt);
+
+        const encrypted = new Uint8Array(await window.crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv: iv },
+          key,
+          textEncoder.encode(text)
+        ));
+
+        const pkg = new Uint8Array(28 + encrypted.length);
+        pkg.set(salt, 0);
+        pkg.set(iv, 16);
+        pkg.set(encrypted, 28);
+
+        labLastCipherToken = arrayBufferToBase64(pkg);
+
+        const outputBox = document.getElementById('labOutputBox');
+        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-emerald-300 break-all select-all shadow-inner";
+
+        playDecodeWave(labLastCipherToken, outputBox, () => {
+          document.getElementById('labOutputLabel').textContent = "3. Token Cifrado AES-GCM (Base64)";
+          document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-emerald-400 font-bold";
+          document.getElementById('labStatusBadge').textContent = "AES-256-GCM";
+
+          if (feedback) {
+            feedback.textContent = "Mensaje cifrado con éxito. El vector IV aleatorio hace que el token sea único.";
+            feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
+          }
+        });
+
+        updateDynamicPythonScript();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function decryptAesLab() {
+      const feedback = document.getElementById('labFeedbackMsg');
+      try {
+        const password = document.getElementById('labPassword').value;
+        const token = labLastCipherToken;
+
+        if (!token) {
+          if (feedback) {
+            feedback.textContent = "Primero encripta un mensaje.";
+            feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
+          }
+          return;
+        }
+
+        const raw = base64ToUint8Array(token);
+        if (raw.length < 28) throw new Error("Token no válido");
+
+        const salt = raw.slice(0, 16);
+        const iv = raw.slice(16, 28);
+        const ciphertext = raw.slice(28);
+
+        const key = await deriveKeyFromPassword(password, salt);
+        const decrypted = await window.crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: iv },
+          key,
+          ciphertext
+        );
+
+        const plainText = textDecoder.decode(decrypted);
+        const outputBox = document.getElementById('labOutputBox');
+        outputBox.textContent = plainText;
+        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/30 p-3.5 font-mono text-sm sm:text-base text-white break-all shadow-inner font-bold";
+
+        document.getElementById('labOutputLabel').textContent = "3. Mensaje Descifrado";
+        document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-white font-bold";
+        document.getElementById('labStatusBadge').textContent = "Autenticación Válida";
+
+        if (feedback) {
+          feedback.textContent = "Descifrado correcto: la clave coincide y los datos no fueron alterados.";
+          feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
+        }
+      } catch (err) {
+        const outputBox = document.getElementById('labOutputBox');
+        outputBox.textContent = "ERROR: Clave incorrecta o token manipulado.";
+        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-rose-950/40 border border-rose-500/40 p-3.5 font-mono text-xs sm:text-sm text-rose-300 break-all";
+        if (feedback) {
+          feedback.textContent = "Criptografía en acción: AES-GCM rechaza cualquier clave incorrecta.";
+          feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
+        }
+      }
+    }
+
+    async function computeSha256Lab() {
+      const text = document.getElementById('labInputText').value;
+      const data = textEncoder.encode(text);
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      document.getElementById('labOutputLabel').textContent = "2. Hash Digest SHA-256";
+      document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-amber-300 font-bold";
+      document.getElementById('labStatusBadge').textContent = "256 bits";
+
+      const outputBox = document.getElementById('labOutputBox');
+      outputBox.textContent = hashHex;
+      outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-amber-300 break-all select-all shadow-inner";
+
+      if (lastSha256Digest && lastSha256Digest !== hashHex) {
+        let diffCount = 0;
+        for (let i = 0; i < 64; i++) {
+          if (lastSha256Digest[i] !== hashHex[i]) diffCount++;
+        }
+        const pct = Math.round((diffCount / 64) * 100);
+        const statEl = document.getElementById('labAvalancheStat');
+        if (statEl) {
+          statEl.textContent = `${diffCount}/64 caracteres mutaron (${pct}%)`;
+          statEl.className = "text-amber-300 font-bold";
+        }
+      }
+      lastSha256Digest = hashHex;
+
+      const feedback = document.getElementById('labFeedbackMsg');
+      if (feedback) {
+        feedback.textContent = "64 caracteres hexadecimales. Un cambio minúsculo altera ~50% del digest.";
+        feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
+      }
+
+      updateDynamicPythonScript();
+    }
+
+    function caesarShift(text, shift) {
+      shift = ((Number(shift) % 26) + 26) % 26;
+      return Array.from(text).map(ch => {
+        const code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) return String.fromCharCode((code - 65 + shift) % 26 + 65);
+        if (code >= 97 && code <= 122) return String.fromCharCode((code - 97 + shift) % 26 + 97);
+        return ch;
+      }).join('');
+    }
+
+    function computeCaesarLab() {
+      const text = document.getElementById('labInputText').value;
+      const shift = document.getElementById('labCaesarShift').value;
+      const result = caesarShift(text, shift);
+
+      document.getElementById('labOutputLabel').textContent = `2. Cifrado César (Shift +${shift})`;
+      document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold";
+      document.getElementById('labStatusBadge').textContent = `Shift: ${shift}`;
+
+      const outputBox = document.getElementById('labOutputBox');
+      outputBox.textContent = result;
+      outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-sm sm:text-base text-purple-200 break-all select-all shadow-inner";
+
+      const feedback = document.getElementById('labFeedbackMsg');
+      if (feedback) {
+        feedback.textContent = "Sustitución didáctica para comprender la rotación algorítmica de caracteres.";
+        feedback.className = "mt-2 text-xs sm:text-sm text-purple-300 font-bold";
+      }
+
+      updateDynamicPythonScript();
+    }
+
+    function handleCaesarShiftChange() {
+      const val = document.getElementById('labCaesarShift').value;
+      const disp = document.getElementById('labCaesarShiftVal');
+      if (disp) disp.textContent = val;
+      computeCaesarLab();
+    }
+
+    function switchDemoModule(module) {
+      currentLabMode = module;
+      const btnSym = document.getElementById('demoBtnSym');
+      const btnHash = document.getElementById('demoBtnHash');
+      const btnCaesar = document.getElementById('demoBtnCaesar');
+
+      const modSym = document.getElementById('labModuleSymmetric');
+      const modHash = document.getElementById('labModuleHash');
+      const modCaesar = document.getElementById('labModuleCaesar');
+
+      [btnSym, btnHash, btnCaesar].forEach(b => {
+        if (b) b.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer";
+      });
+      [modSym, modHash, modCaesar].forEach(m => {
+        if (m) m.classList.add('hidden');
+      });
+
+      if (module === 'symmetric') {
+        if (btnSym) btnSym.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
+        if (modSym) modSym.classList.remove('hidden');
+        encryptAesLab();
+      } else if (module === 'hash') {
+        if (btnHash) btnHash.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
+        if (modHash) modHash.classList.remove('hidden');
+        computeSha256Lab();
+      } else {
+        if (btnCaesar) btnCaesar.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
+        if (modCaesar) modCaesar.classList.remove('hidden');
+        computeCaesarLab();
+      }
+    }
+
+    function handleLabInputChange() {
+      const text = document.getElementById('labInputText').value;
+      const counter = document.getElementById('labCharCounter');
+      if (counter) counter.textContent = `${text.length} caracteres`;
+
+      if (currentLabMode === 'symmetric') {
+        encryptAesLab();
+      } else if (currentLabMode === 'hash') {
+        computeSha256Lab();
+      } else {
+        computeCaesarLab();
+      }
+    }
+
+    function escapePythonString(str) {
+      return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    }
+
+    function updateDynamicPythonScript() {
+      const text = document.getElementById('labInputText').value;
+      const safeText = escapePythonString(text);
+      const codeContainer = document.getElementById('labDynamicPythonCode');
+      if (!codeContainer) return;
+
+      if (currentLabMode === 'symmetric') {
+        const password = escapePythonString(document.getElementById('labPassword').value);
+        codeContainer.innerHTML = `<span class="py-cm"># Cifrado Simétrico AES-GCM con PBKDF2</span>
+<span class="py-kw">import</span> base64, os
+<span class="py-kw">from</span> cryptography.hazmat.primitives.ciphers.aead <span class="py-kw">import</span> <span class="py-cls">AESGCM</span>
+<span class="py-kw">from</span> cryptography.hazmat.primitives.kdf.pbkdf2 <span class="py-kw">import</span> <span class="py-cls">PBKDF2HMAC</span>
+<span class="py-kw">from</span> cryptography.hazmat.primitives <span class="py-kw">import</span> hashes
+
+contrasenia = <span class="py-bytes">b"${password}"</span>
+mensaje = <span class="py-str">"${safeText}"</span>.<span class="py-fn">encode</span>(<span class="py-str">"utf-8"</span>)
+
+<span class="py-cm"># 1. Derivar clave de 256 bits</span>
+salt = os.<span class="py-fn">urandom</span>(<span class="py-num">16</span>)
+kdf = <span class="py-cls">PBKDF2HMAC</span>(hashes.<span class="py-cls">SHA256</span>(), length=<span class="py-num">32</span>, salt=salt, iterations=<span class="py-num">200_000</span>)
+clave_aes = kdf.<span class="py-fn">derive</span>(contrasenia)
+
+<span class="py-cm"># 2. Cifrar con AES-GCM</span>
+iv = os.<span class="py-fn">urandom</span>(<span class="py-num">12</span>)
+cifrador = <span class="py-cls">AESGCM</span>(clave_aes)
+cifrado = cifrador.<span class="py-fn">encrypt</span>(iv, mensaje, associated_data=<span class="py-kw">None</span>)
+
+<span class="py-cm"># 3. Empaquetar y codificar en Base64</span>
+token = base64.<span class="py-fn">b64encode</span>(salt + iv + cifrado).<span class="py-fn">decode</span>()
+<span class="py-fn">print</span>(<span class="py-str">"Token:"</span>, token[:40], <span class="py-str">"..."</span>)`;
+      } else if (currentLabMode === 'hash') {
+        codeContainer.innerHTML = `<span class="py-cm"># Huella digital SHA-256 (Módulo estándar)</span>
+<span class="py-kw">import</span> hashlib
+
+texto = <span class="py-str">"${safeText}"</span>
+datos_bytes = texto.<span class="py-fn">encode</span>(<span class="py-str">"utf-8"</span>)
+
+<span class="py-cm"># Calcular digest hexadecimal</span>
+digest_hex = hashlib.<span class="py-fn">sha256</span>(datos_bytes).<span class="py-fn">hexdigest</span>()
+
+<span class="py-fn">print</span>(<span class="py-str">f"Entrada: {texto}"</span>)
+<span class="py-fn">print</span>(<span class="py-str">f"SHA-256: {digest_hex}"</span>)`;
+      } else {
+        const shift = document.getElementById('labCaesarShift').value;
+        codeContainer.innerHTML = `<span class="py-cm"># Cifrado César didáctico</span>
+<span class="py-kw">def</span> <span class="py-fn">cifrado_cesar</span>(texto, desplazamiento=<span class="py-num">${shift}</span>):
+    resultado = []
+    <span class="py-kw">for</span> char <span class="py-kw">in</span> texto:
+        <span class="py-kw">if</span> char.<span class="py-fn">isalpha</span>():
+            base = <span class="py-fn">ord</span>(<span class="py-str">'A'</span>) <span class="py-kw">if</span> char.<span class="py-fn">isupper</span>() <span class="py-kw">else</span> <span class="py-fn">ord</span>(<span class="py-str">'a'</span>)
+            nuevo = <span class="py-fn">chr</span>((<span class="py-fn">ord</span>(char) - base + desplazamiento) % <span class="py-num">26</span> + base)
+            resultado.<span class="py-fn">append</span>(nuevo)
+        <span class="py-kw">else</span>:
+            resultado.<span class="py-fn">append</span>(char)
+    <span class="py-kw">return</span> <span class="py-str">""</span>.<span class="py-fn">join</span>(resultado)
+
+mensaje = <span class="py-str">"${safeText}"</span>
+<span class="py-fn">print</span>(<span class="py-str">"Cifrado:"</span>, <span class="py-fn">cifrado_cesar</span>(mensaje))`;
+      }
+    }
+
+    function copyDynamicLabPythonCode() {
+      const codeText = document.getElementById('labDynamicPythonCode').innerText;
+      copyToClipboard(codeText, "Script copiado");
+    }
+
+    // =========================================================
+    // QUIZ INTERACTIVO
+    // =========================================================
+    function handleQuizAnswer(qNum, isCorrect, btnEl) {
+      const feedbackEl = document.getElementById(`quizFeedback${qNum}`);
+      const parentContainer = btnEl.parentElement;
+      const allButtons = parentContainer.querySelectorAll('button');
+
+      allButtons.forEach(b => {
+        b.classList.remove('border-white', 'bg-white/10', 'border-rose-500/60', 'bg-rose-500/10', 'text-white', 'text-rose-300');
+      });
+
+      if (isCorrect) {
+        btnEl.classList.add('border-white', 'bg-white/10', 'text-white');
+        feedbackEl.innerHTML = '<span class="text-white font-bold"><i class="fa-solid fa-check mr-1 text-emerald-400"></i> ¡Correcto!</span> Exactamente, respuesta precisa.';
+      } else {
+        btnEl.classList.add('border-rose-500/60', 'bg-rose-500/10', 'text-rose-300');
+        feedbackEl.innerHTML = '<span class="text-rose-400 font-bold"><i class="fa-solid fa-xmark mr-1"></i> Incorrecto.</span> Revisa los principios clave de seguridad.';
+      }
+    }
+
+    // =========================================================
+    // ARRANQUE AUTOMÁTICO
+    // =========================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      initCryptoCanvas();
+      updatePasswordEntropy(document.getElementById('labPassword')?.value || '');
+      await encryptAesLab();
+      document.querySelectorAll('#hero [data-motion]').forEach(el => el.classList.add('in-view'));
+
+
+    });
+  </script>
+</body>
+</html>
