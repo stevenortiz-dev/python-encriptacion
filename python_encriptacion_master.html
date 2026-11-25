@@ -872,152 +872,483 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
 
 
     <!-- =========================================================
-         05. DEMO (LABORATORIO EN VIVO)
+         05. DEMO: LABORATORIO EN VIVO — ARGON2ID + AES-GCM (DEMO1.PY)
     ========================================================== -->
     <section id="demo" class="projector-section">
       <div data-motion="fade-up" class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-white"></span> 05 &bull; Laboratorio DEMO
-          </span>
-          <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">DEMO: Laboratorio en Vivo</h2>
-          <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1">
-            Ejecuta algoritmos reales dentro de tu navegador y obtén el script Python generado en tiempo real.
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold mb-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>DEMO OFICIAL DE LA EXPOSICIÓN</span>
+          </div>
+          <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+            DEMO: <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400">Argon2id + AES-GCM</span> (DEMO1.PY)
+          </h2>
+          <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
+            Ejecución del script oficial de la exposición: derivación robusta con <strong class="text-white">Argon2id</strong> (resistente a fuerza bruta GPU), cifrado simétrico autenticado con <strong class="text-white">AES-GCM</strong> (detección de alteración <code class="text-amber-300 font-mono">InvalidTag</code>) y gestión de tokens en sesión.
           </p>
         </div>
 
         <!-- Selector de Módulo -->
-        <div class="bg-black border border-white/20 p-1.5 rounded-xl flex items-center gap-1">
-          <button id="demoBtnSym" onclick="switchDemoModule('symmetric')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer">
-            <i class="fa-solid fa-key mr-1.5"></i>Simétrico (AES-256)
+        <div class="bg-black border border-white/20 p-1.5 rounded-xl flex items-center gap-1 flex-wrap">
+          <button id="demoBtnOfficial" onclick="switchDemoModule('official')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer">
+            <i class="fa-solid fa-terminal mr-1.5"></i>Simulador DEMO1.PY
+          </button>
+          <button id="demoBtnCode" onclick="switchDemoModule('code')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
+            <i class="fa-brands fa-python mr-1.5 text-amber-400"></i>Código Fuente DEMO1.PY
           </button>
           <button id="demoBtnHash" onclick="switchDemoModule('hash')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
-            <i class="fa-solid fa-fingerprint mr-1.5"></i>Hash (SHA-256)
+            <i class="fa-solid fa-fingerprint mr-1.5 text-sky-400"></i>Efecto Avalancha (SHA-256)
           </button>
           <button id="demoBtnCaesar" onclick="switchDemoModule('caesar')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
-            <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>César (Didáctico)
+            <i class="fa-solid fa-clock-rotate-left mr-1.5 text-purple-400"></i>César
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <!-- MÓDULO 1: SIMULADOR OFICIAL DEMO1.PY (POR DEFECTO) -->
+      <div id="labModuleOfficial" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        <!-- Panel Izquierdo: Controles -->
-        <div data-motion="slide-left" data-delay="100" class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
+        <!-- Panel Izquierdo: Controles de Sesión -->
+        <div data-motion="slide-left" data-delay="100" class="lg:col-span-5 motion-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between gap-5">
           
-          <!-- Entrada de Mensaje -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <label for="labInputText" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold">
-                1. Mensaje de Entrada (Texto Plano)
-              </label>
-              <span id="labCharCounter" class="text-xs font-mono text-slate-300">25 caracteres</span>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+              <span class="text-xs font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-sliders"></i> Panel de Control DEMO1.PY
+              </span>
+              <span id="demo1SessionCountBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10 font-bold">
+                0 tokens en memoria
+              </span>
             </div>
-            <textarea id="labInputText" rows="2" oninput="handleLabInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none p-3.5 text-sm sm:text-base text-white font-mono resize-none shadow-inner" placeholder="Escribe un mensaje secreto...">Mi clave del WiFi es 1234</textarea>
-          </div>
 
-          <!-- MÓDULO 1: SIMÉTRICO AES -->
-          <div id="labModuleSymmetric" class="space-y-4">
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label for="labPassword" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold">
-                  2. Contraseña o Clave Secreta
-                </label>
-                <button onclick="generateRandomLabKey()" class="text-xs sm:text-sm font-mono text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1.5 cursor-pointer">
-                  <i class="fa-solid fa-dice"></i> Nueva Clave Aleatoria
+            <!-- Opción 1: Cifrar -->
+            <div class="p-4 rounded-xl bg-black/60 border border-white/15 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Opción 1: Cifrar un Mensaje
+                </span>
+                <span class="text-[11px] font-mono text-slate-400">Sal 16B + Nonce 12B + Tag 16B</span>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1">
+                  <label for="demo1EncryptPassword">Contraseña:</label>
+                  <button type="button" onclick="generateDemo1RandomKey()" class="text-amber-300 hover:text-amber-200 text-[11px] font-mono cursor-pointer font-bold">
+                    <i class="fa-solid fa-dice mr-1"></i>Clave Fuerte
+                  </button>
+                </div>
+                <div class="relative">
+                  <input id="demo1EncryptPassword" type="password" value="SuperClaveSegura#2026" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-emerald-400 pr-9">
+                  <button type="button" onclick="togglePasswordVisibility('demo1EncryptPassword', 'pwdEyeIcon1')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+                    <i id="pwdEyeIcon1" class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label for="demo1Plaintext" class="text-xs font-mono text-slate-300 block mb-1">Mensaje para cifrar:</label>
+                <input id="demo1Plaintext" type="text" value="Mi clave del WiFi es 1234" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-400">
+              </div>
+
+              <button onclick="handleDemo1Encrypt()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-lock"></i>
+                <span>1. Cifrar Mensaje (Argon2id + AESGCM)</span>
+              </button>
+            </div>
+
+            <!-- Opción 2: Descifrar -->
+            <div class="p-4 rounded-xl bg-black/60 border border-white/15 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span> Opción 2: Descifrar de esta Sesión
+                </span>
+                <span class="text-[11px] font-mono text-slate-400">Validación de Tag AES-GCM</span>
+              </div>
+
+              <div>
+                <label for="demo1TokenSelect" class="text-xs font-mono text-slate-300 block mb-1">Número del token para descifrar:</label>
+                <select id="demo1TokenSelect" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 cursor-pointer">
+                  <option value="">(Primero cifra un mensaje en Opción 1)</option>
+                </select>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1">
+                  <label for="demo1DecryptPassword">Contraseña usada para cifrarlo:</label>
+                  <button type="button" onclick="setWrongPasswordDemo1()" class="text-rose-400 hover:text-rose-300 text-[11px] font-mono cursor-pointer font-bold" title="Prueba con una contraseña incorrecta para ver la detección en vivo">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>Clave Incorrecta
+                  </button>
+                </div>
+                <div class="relative">
+                  <input id="demo1DecryptPassword" type="password" value="SuperClaveSegura#2026" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 pr-9">
+                  <button type="button" onclick="togglePasswordVisibility('demo1DecryptPassword', 'pwdEyeIcon2')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+                    <i id="pwdEyeIcon2" class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <button onclick="handleDemo1Decrypt()" class="flex-1 py-2.5 px-3 rounded-xl bg-white hover:bg-slate-200 text-black font-bold text-sm transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg">
+                  <i class="fa-solid fa-unlock text-xs"></i>
+                  <span>2. Descifrar</span>
+                </button>
+                <button onclick="handleDemo1TamperAttack()" class="py-2.5 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5" title="Altera 1 byte del token para provocar InvalidTag en vivo">
+                  <i class="fa-solid fa-bug text-xs"></i>
+                  <span>Manipular Token</span>
                 </button>
               </div>
-              <input id="labPassword" type="text" value="SuperClaveSegura#Python" oninput="handleLabInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none px-4 py-2.5 text-sm sm:text-base font-mono text-amber-300">
-              
-              <!-- Medidor de Entropía y Fortaleza de Clave Dinámico -->
-              <div class="mt-2.5 flex items-center justify-between gap-3 text-xs font-mono">
-                <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex gap-1">
-                  <div id="pwdEntropyBar1" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
-                  <div id="pwdEntropyBar2" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
-                  <div id="pwdEntropyBar3" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
-                  <div id="pwdEntropyBar4" class="h-full flex-1 rounded-full bg-emerald-400 transition-all duration-300"></div>
-                </div>
-                <span id="pwdEntropyLabel" class="text-emerald-400 font-bold">Fuerza Militar (AES-256)</span>
-              </div>
             </div>
 
-            <div class="flex flex-wrap gap-3">
-              <button onclick="encryptAesLab()" class="flex-1 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm sm:text-base hover:bg-slate-200 transition cursor-pointer flex items-center justify-center gap-2">
-                <i class="fa-solid fa-lock"></i>
-                <span>Encriptar (AES-GCM)</span>
+            <!-- Opciones 3 y 4 -->
+            <div class="flex items-center justify-between pt-1 text-xs font-mono">
+              <button onclick="handleDemo1ClearHistory()" class="text-slate-400 hover:text-rose-400 transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>3. Borrar historial</span>
               </button>
-              <button onclick="decryptAesLab()" class="flex-1 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base transition cursor-pointer flex items-center justify-center gap-2">
-                <i class="fa-solid fa-unlock"></i>
-                <span>Descifrar Token</span>
+              <button onclick="handleDemo1ResetTerminal()" class="text-slate-400 hover:text-white transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Limpiar Pantalla</span>
               </button>
             </div>
           </div>
 
-          <!-- MÓDULO 2: HASH SHA-256 -->
-          <div id="labModuleHash" class="hidden space-y-3.5">
-            <div class="p-4 rounded-xl bg-white/[0.08] border border-white/20 text-sm sm:text-base text-slate-200 leading-relaxed">
-              <strong>Efecto Avalancha en tiempo real:</strong> Modifica un solo carácter arriba y observa cómo cambia más del 40% al 60% del digest SHA-256 de 256 bits.
+          <!-- Medidor de Entropía -->
+          <div class="pt-3 border-t border-white/10">
+            <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1.5">
+              <span>Derivación de Clave (KDF):</span>
+              <span class="text-emerald-400 font-bold">Argon2id (64 MB, 3 iter, 4 lanes)</span>
             </div>
-            <div class="p-3.5 rounded-xl bg-black/80 border border-white/15 flex items-center justify-between text-xs sm:text-sm font-mono">
-              <span class="text-slate-300 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-emerald-400"></i> Mutación de Salida:
-              </span>
-              <span id="labAvalancheStat" class="text-emerald-300 font-bold">0% de caracteres mutaron</span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm font-mono text-slate-300 font-semibold">
-              <span>Longitud: <strong class="text-emerald-400 font-bold">256 bits (64 hex)</strong></span>
-              <span>Propiedad: <strong class="text-white font-bold">Resistencia a colisiones</strong></span>
+            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden flex gap-1">
+              <div class="h-full flex-1 bg-emerald-400"></div>
+              <div class="h-full flex-1 bg-emerald-400"></div>
+              <div class="h-full flex-1 bg-emerald-400"></div>
+              <div class="h-full flex-1 bg-emerald-400"></div>
             </div>
           </div>
-
-          <!-- MÓDULO 3: CÉSAR -->
-          <div id="labModuleCaesar" class="hidden space-y-3.5">
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label for="labCaesarShift" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold">
-                  Desplazamiento del Alfabeto (Shift K): <span id="labCaesarShiftVal" class="text-amber-300 font-extrabold text-base">3</span>
-                </label>
-              </div>
-              <input id="labCaesarShift" type="range" min="1" max="25" value="3" oninput="handleCaesarShiftChange()" class="w-full accent-white cursor-pointer h-2.5">
-            </div>
-            <div class="p-3.5 rounded-xl bg-white/[0.08] border border-white/20 text-xs sm:text-sm text-purple-200">
-              Cifrado clásico por sustitución monoalfabética. Inseguro para uso real, excelente para ilustrar el concepto matemático de desplazamiento algorítmico.
-            </div>
-          </div>
-
-          <!-- Salida Criptográfica -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span id="labOutputLabel" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-emerald-400 font-bold">
-                3. Resultado Cifrado (Token Base64)
-              </span>
-              <span id="labStatusBadge" class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-white border border-white/20 font-bold">
-                AES-GCM 256-bit
-              </span>
-            </div>
-            <div id="labOutputBox" class="w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-emerald-300 break-all select-all shadow-inner">
-              Procesando...
-            </div>
-            <div id="labFeedbackMsg" class="mt-2 text-xs sm:text-sm font-semibold min-h-[1.4rem]"></div>
-          </div>
-
         </div>
 
-        <!-- Panel Derecho: Código Python Dinámico -->
-        <div data-motion="slide-right" data-delay="150" class="lg:col-span-6 terminal-window rounded-2xl flex flex-col overflow-hidden">
+        <!-- Panel Derecho: Terminal Interactiva en Vivo -->
+        <div data-motion="slide-right" data-delay="150" class="lg:col-span-7 terminal-window rounded-2xl flex flex-col overflow-hidden">
+          <div class="px-5 py-3 bg-black border-b border-white/[0.1] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-rose-500/80"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-amber-400/80"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-500/80"></span>
+              <span class="ml-2 font-mono text-xs sm:text-sm text-slate-200 font-bold flex items-center gap-2">
+                <span>python -u DEMO1.PY</span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">En Vivo</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="copyDemo1TerminalOutput()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-white transition cursor-pointer font-bold" title="Copiar consola">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+              <a href="DEMO1.PY" download="DEMO1.py" class="px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i> Descargar DEMO1.PY
+              </a>
+            </div>
+          </div>
+
+          <!-- Consola Output -->
+          <div id="demo1ConsoleOutput" class="p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-y-auto flex-1 text-slate-200 min-h-[380px] max-h-[520px] bg-black/90 space-y-1 select-text">
+            <div class="text-slate-400 italic">=== Demo Argon2id + AES-GCM ===</div>
+            <div class="text-slate-400">1. Cifrar un mensaje</div>
+            <div class="text-slate-400">2. Descifrar un mensaje de esta sesión</div>
+            <div class="text-slate-400">3. Borrar mensajes cifrados</div>
+            <div class="text-slate-400">4. Salir</div>
+            <div class="text-emerald-400 font-semibold mt-3 flex items-center gap-2">
+              <i class="fa-solid fa-terminal text-xs"></i>
+              <span>Terminal lista. Haz clic en "1. Cifrar Mensaje" para comenzar la prueba en vivo.</span>
+            </div>
+          </div>
+
+          <!-- Pie de Terminal -->
+          <div class="px-5 py-2.5 bg-black/80 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-shield-halved text-emerald-400"></i> AEAD: Confidencialidad + Integridad con InvalidTag
+            </span>
+            <span class="text-slate-300 font-bold">Base64 URL-Safe Encoded</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MÓDULO 2: CÓDIGO FUENTE DEMO1.PY COMPLETO -->
+      <div id="labModuleCode" class="hidden space-y-4">
+        <div class="terminal-window rounded-2xl overflow-hidden">
+          <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-brands fa-python text-amber-400 text-xl"></i>
+              <div>
+                <span class="font-mono text-sm sm:text-base text-white font-bold">DEMO1.PY</span>
+                <span class="ml-2 text-xs text-slate-400 font-mono">105 líneas &bull; Python 3 &bull; Cryptography</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="copyDemo1SourceCode()" class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-mono text-white flex items-center gap-2 transition cursor-pointer font-bold">
+                <i class="fa-regular fa-copy"></i> Copiar Código
+              </button>
+              <a href="DEMO1.PY" download="DEMO1.py" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-mono font-bold transition flex items-center gap-2">
+                <i class="fa-solid fa-download"></i> Descargar DEMO1.PY
+              </a>
+            </div>
+          </div>
+          <pre id="demo1FullSourcePre" class="p-5 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed overflow-x-auto max-h-[550px] text-slate-100 bg-[#040407]"><span class=<span class="py-str">"py-kw"</span>>import </span>base64
+<span class=<span class="py-str">"py-kw"</span>>import </span>os
+<span class=<span class="py-str">"py-kw"</span>>from </span>getpass <span class=<span class="py-str">"py-kw"</span>>import </span>getpass
+
+<span class=<span class="py-str">"py-kw"</span>>from </span>cryptography.exceptions <span class=<span class="py-str">"py-kw"</span>>import </span><span class="py-cls">InvalidTag</span>
+<span class=<span class="py-str">"py-kw"</span>>from </span>cryptography.hazmat.primitives.ciphers.aead <span class=<span class="py-str">"py-kw"</span>>import </span><span class="py-cls">AESGCM</span>
+<span class=<span class="py-str">"py-kw"</span>>from </span>cryptography.hazmat.primitives.kdf.argon2 <span class=<span class="py-str">"py-kw"</span>>import </span><span class="py-cls">Argon2id</span>
+
+
+<span class=<span class="py-str">"py-kw"</span>>def </span><span class=<span class="py-str">"py-fn"</span>>derivar_clave</span>(contrasena: bytes, sal: bytes) -&gt; bytes:
+    kdf = <span class=<span class="py-str">"py-fn"</span>><span class="py-cls">Argon2id</span></span>(
+        salt=sal,
+        length=32,
+        iterations=3,
+        lanes=4,
+        memory_cost=64 * 1024,
+    )
+    <span class=<span class="py-str">"py-kw"</span>>return </span>kdf.<span class=<span class="py-str">"py-fn"</span>>derive</span>(contrasena)
+
+<span class=<span class="py-str">"py-kw"</span>>def </span><span class=<span class="py-str">"py-fn"</span>>cifrar</span>(mensaje: str, contrasena: bytes) -&gt; str:
+    sal = os.<span class=<span class="py-str">"py-fn"</span>>urandom</span>(16)
+    nonce = os.<span class=<span class="py-str">"py-fn"</span>>urandom</span>(12)
+    clave = <span class=<span class="py-str">"py-fn"</span>>derivar_clave</span>(contrasena, sal)
+
+    texto_bytes = mensaje.<span class=<span class="py-str">"py-fn"</span>>encode</span>()
+    cifrado = <span class=<span class="py-str">"py-fn"</span>><span class="py-cls">AESGCM</span></span>(clave).<span class=<span class="py-str">"py-fn"</span>>encrypt</span>(nonce, texto_bytes, <span class=<span class="py-str">"py-kw"</span>>None</span>)
+    paquete = sal + nonce + cifrado
+    <span class=<span class="py-str">"py-kw"</span>>return </span>base64.<span class=<span class="py-str">"py-fn"</span>>urlsafe_b64encode</span>(paquete).<span class=<span class="py-str">"py-fn"</span>>decode</span>(<span class="py-str">"ascii"</span>)
+
+
+<span class=<span class="py-str">"py-kw"</span>>def </span><span class=<span class="py-str">"py-fn"</span>>descifrar</span>(token: str, contrasena: bytes) -&gt; str:
+    paquete = base64.<span class=<span class="py-str">"py-fn"</span>>urlsafe_b64decode</span>(token.<span class=<span class="py-str">"py-fn"</span>>encode</span>(<span class="py-str">"ascii"</span>))
+    sal = paquete[:16]
+    nonce = paquete[16:28]
+    cifrado = paquete[28:]
+
+    clave = <span class=<span class="py-str">"py-fn"</span>>derivar_clave</span>(contrasena, sal)
+    texto_bytes = <span class=<span class="py-str">"py-fn"</span>><span class="py-cls">AESGCM</span></span>(clave).<span class=<span class="py-str">"py-fn"</span>>decrypt</span>(nonce, cifrado, <span class=<span class="py-str">"py-kw"</span>>None</span>)
+    <span class=<span class="py-str">"py-kw"</span>>return </span>texto_bytes.<span class=<span class="py-str">"py-fn"</span>>decode</span>()
+
+<span class=<span class="py-str">"py-kw"</span>>def </span><span class=<span class="py-str">"py-fn"</span>>main</span>():
+    tokens = {}
+    siguiente_id = 1
+
+    <span class=<span class="py-str">"py-kw"</span>>while </span><span class=<span class="py-str">"py-kw"</span>>True</span>:
+        <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"
+=== Demo <span class="py-cls">Argon2id</span> + AES-GCM ==="</span>)
+        <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"1. Cifrar un mensaje"</span>)
+        <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"2. Descifrar un mensaje de esta sesión"</span>)
+        <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"3. Borrar mensajes cifrados"</span>)
+        <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"4. Salir"</span>)
+        opcion = <span class=<span class="py-str">"py-fn"</span>>input</span>(<span class="py-str">"Elige 1, 2, 3 o 4: "</span>).<span class=<span class="py-str">"py-fn"</span>>strip</span>()
+
+
+        <span class=<span class="py-str">"py-kw"</span>>if </span>opcion == <span class="py-str">"1"</span>:
+            contrasena = <span class=<span class="py-str">"py-fn"</span>>getpass</span>(<span class="py-str">"Contraseña: "</span>).<span class=<span class="py-str">"py-fn"</span>>encode</span>()
+            <span class=<span class="py-str">"py-kw"</span>>if </span>not contrasena:
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"La contraseña no puede estar vacía."</span>)
+                <span class=<span class="py-str">"py-kw"</span>>continue</span>
+
+            mensaje = <span class=<span class="py-str">"py-fn"</span>>input</span>(<span class="py-str">"Mensaje para cifrar: "</span>)
+            token = <span class=<span class="py-str">"py-fn"</span>>cifrar</span>(mensaje, contrasena)
+            tokens[siguiente_id] = token
+
+            <span class=<span class="py-str">"py-fn"</span>>print</span>(f<span class="py-str">"
+Token de cifrado <span class="</span>py-cm<span class="py-str">">#{siguiente_id}:"</span>)</span>
+            <span class=<span class="py-str">"py-fn"</span>>print</span>(token)
+            siguiente_id += 1
+
+        <span class=<span class="py-str">"py-kw"</span>>elif </span>opcion == <span class="py-str">"2"</span>:
+            <span class=<span class="py-str">"py-kw"</span>>if </span>not tokens:
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Primero cifra un mensaje con la opción 1."</span>)
+                <span class=<span class="py-str">"py-kw"</span>>continue</span>
+
+            <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Tokens disponibles:"</span>, <span class="py-str">", "</span>.<span class=<span class="py-str">"py-fn"</span>>join</span>(<span class=<span class="py-str">"py-fn"</span>>map</span>(str, tokens.<span class=<span class="py-str">"py-fn"</span>>keys</span>())))
+            <span class=<span class="py-str">"py-kw"</span>>try:</span>
+                token_id = <span class=<span class="py-str">"py-fn"</span>>int</span>(<span class=<span class="py-str">"py-fn"</span>>input</span>(<span class="py-str">"Número del token para descifrar: "</span>))
+                token = tokens[token_id]
+            <span class=<span class="py-str">"py-kw"</span>>except </span>(ValueError, KeyError):
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Ese token no está en el historial."</span>)
+                <span class=<span class="py-str">"py-kw"</span>>continue</span>
+
+            contrasena = <span class=<span class="py-str">"py-fn"</span>>getpass</span>(<span class="py-str">"Contraseña usada para cifrarlo: "</span>).<span class=<span class="py-str">"py-fn"</span>>encode</span>()
+            <span class=<span class="py-str">"py-kw"</span>>try:</span>
+                mensaje = <span class=<span class="py-str">"py-fn"</span>>descifrar</span>(token, contrasena)
+            <span class=<span class="py-str">"py-kw"</span>>except </span><span class="py-cls">InvalidTag</span>:
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Contraseña incorrecta o token alterado."</span>)
+            <span class=<span class="py-str">"py-kw"</span>>else:</span>
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"
+Token recuperado"</span>)
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(f<span class="py-str">"Token de cifrado <span class="</span>py-cm<span class="py-str">">#{token_id}:"</span>)</span>
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(token)
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Mensaje descifrado:"</span>, mensaje)
+
+        <span class=<span class="py-str">"py-kw"</span>>elif </span>opcion == <span class="py-str">"3"</span>:
+            <span class=<span class="py-str">"py-kw"</span>>if </span><span class=<span class="py-str">"py-fn"</span>>input</span>(<span class="py-str">"¿Borrar historial? (s/n): "</span>).<span class=<span class="py-str">"py-fn"</span>>strip</span>().<span class=<span class="py-str">"py-fn"</span>>lower</span>() == <span class="py-str">"s"</span>:
+                tokens.<span class=<span class="py-str">"py-fn"</span>>clear</span>()
+                <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Historial borrado."</span>)
+
+        <span class=<span class="py-str">"py-kw"</span>>elif </span>opcion == <span class="py-str">"4"</span>:
+            <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Demo terminada."</span>)
+            <span class=<span class="py-str">"py-kw"</span>>break</span>
+
+        <span class=<span class="py-str">"py-kw"</span>>else:</span>
+            <span class=<span class="py-str">"py-fn"</span>>print</span>(<span class="py-str">"Opción inválida."</span>)
+
+<span class=<span class="py-str">"py-kw"</span>>if </span>__name__ == <span class="py-str">"__main__"</span>:
+    <span class=<span class="py-str">"py-fn"</span>>main</span>()</pre>
+        </div>
+
+        <!-- Explicación de los 3 Pilares Técnicos de DEMO1.PY -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="motion-card p-4 rounded-xl border-white/15">
+            <div class="text-xs font-mono text-amber-300 font-bold mb-1">01. KDF: Argon2id</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Algoritmo ganador de la Password Hashing Competition. Requiere <strong class="text-white">64 MB de memoria</strong> y 4 lanes, neutralizando ataques masivos paralelos con tarjetas GPU y chips ASIC.
+            </p>
+          </div>
+          <div class="motion-card p-4 rounded-xl border-white/15">
+            <div class="text-xs font-mono text-emerald-400 font-bold mb-1">02. Cifrado: AES-GCM</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Modo Galois/Counter Mode (AEAD). Oculta el mensaje con clave de 256 bits y genera una firma matemática (tag MAC) que detecta cualquier alteración lanzando <code class="text-amber-300 font-mono">InvalidTag</code>.
+            </p>
+          </div>
+          <div class="motion-card p-4 rounded-xl border-white/15">
+            <div class="text-xs font-mono text-sky-400 font-bold mb-1">03. Empaquetado URL-Safe</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Concatena <code class="text-white font-mono">sal (16B) + nonce (12B) + cifrado</code> en un solo token Base64 URL-safe, listo para ser almacenado o transmitido en redes seguras sin corromperse.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO 3: HASH SHA-256 (EFECTO AVALANCHA) -->
+      <div id="labModuleHash" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label for="labHashInputText" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold">
+                1. Entrada para Calcular Hash SHA-256
+              </label>
+              <span id="labHashCharCounter" class="text-xs font-mono text-slate-300">25 caracteres</span>
+            </div>
+            <textarea id="labHashInputText" rows="2" oninput="handleHashInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none p-3.5 text-sm sm:text-base text-white font-mono resize-none shadow-inner" placeholder="Escribe un texto...">Mi clave del WiFi es 1234</textarea>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white/[0.08] border border-white/20 text-sm sm:text-base text-slate-200 leading-relaxed">
+            <strong>Efecto Avalancha en tiempo real:</strong> Modifica un solo carácter arriba y observa cómo se altera aproximadamente el 50% de los 64 caracteres hexadecimales del digest.
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-black/80 border border-white/15 flex items-center justify-between text-xs sm:text-sm font-mono">
+            <span class="text-slate-300 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i> Mutación de Salida:
+            </span>
+            <span id="labAvalancheStat" class="text-emerald-300 font-bold">0% de caracteres mutaron</span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-amber-300 font-bold">
+                2. Digest SHA-256 (256 bits / 64 hex)
+              </span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.1] text-white border border-white/20 font-bold">
+                Resistencia a Colisiones
+              </span>
+            </div>
+            <div id="labHashOutputBox" class="w-full min-h-[72px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-amber-300 break-all select-all shadow-inner">
+              Procesando...
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 terminal-window rounded-2xl flex flex-col overflow-hidden">
           <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between">
             <div class="flex items-center gap-2">
               <i class="fa-brands fa-python text-amber-400 text-lg"></i>
-              <span class="font-mono text-xs sm:text-sm text-slate-200 font-bold">Script Python Dinámico (En Vivo)</span>
+              <span class="font-mono text-xs sm:text-sm text-slate-200 font-bold">Python Estándar: hashlib.sha256()</span>
             </div>
-            <button onclick="copyDynamicLabPythonCode()" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-xs sm:text-sm font-mono text-white flex items-center gap-2 transition cursor-pointer font-bold">
-              <i class="fa-regular fa-copy"></i> Copiar
+            <button onclick="copyToClipboard(document.getElementById('labHashPythonCode').innerText, 'Script SHA-256 copiado')" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-xs font-mono text-white transition cursor-pointer font-bold">
+              <i class="fa-regular fa-copy mr-1"></i> Copiar
             </button>
           </div>
-          <pre id="labDynamicPythonCode" class="p-5 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed overflow-auto flex-1 text-slate-100"></pre>
+          <pre id="labHashPythonCode" class="p-5 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed overflow-auto flex-1 text-slate-100 bg-[#040407]">
+<span class="py-cm"># Huella digital SHA-256 en Python</span>
+<span class="py-kw">import</span> hashlib
+
+texto = <span class="py-str">"Mi clave del WiFi es 1234"</span>
+digest = hashlib.<span class="py-fn">sha256</span>(texto.<span class="py-fn">encode</span>(<span class="py-str">"utf-8"</span>)).<span class="py-fn">hexdigest</span>()
+
+<span class="py-fn">print</span>(<span class="py-str">f"Entrada: {texto}"</span>)
+<span class="py-fn">print</span>(<span class="py-str">f"SHA-256 (64 hex): {digest}"</span>)</pre>
+        </div>
+      </div>
+
+      <!-- MÓDULO 4: CÉSAR (DIDÁCTICO) -->
+      <div id="labModuleCaesar" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
+          <div>
+            <label for="labCaesarInputText" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-200 font-bold block mb-2">
+              1. Mensaje para Cifrar con César
+            </label>
+            <textarea id="labCaesarInputText" rows="2" oninput="handleCaesarInputChange()" class="w-full rounded-xl bg-black border border-white/20 focus:border-white focus:outline-none p-3.5 text-sm sm:text-base text-white font-mono resize-none shadow-inner">Mi clave del WiFi es 1234</textarea>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="labCaesarShift" class="text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold">
+                Desplazamiento del Alfabeto (Shift K): <span id="labCaesarShiftVal" class="text-amber-300 font-extrabold text-base">3</span>
+              </label>
+            </div>
+            <input id="labCaesarShift" type="range" min="1" max="25" value="3" oninput="handleCaesarShiftChange()" class="w-full accent-white cursor-pointer h-2.5">
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white/[0.08] border border-white/20 text-xs sm:text-sm text-purple-200">
+            Cifrado clásico por sustitución monoalfabética. Inseguro para uso moderno, pero ideal para entender el concepto de desplazamiento y llave matemática.
+          </div>
+
+          <div>
+            <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold block mb-1.5">
+              2. Resultado Cifrado por Desplazamiento
+            </span>
+            <div id="labCaesarOutputBox" class="w-full min-h-[72px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-sm sm:text-base text-purple-200 break-all select-all shadow-inner">
+              Procesando...
+            </div>
+          </div>
         </div>
 
+        <div class="lg:col-span-6 terminal-window rounded-2xl flex flex-col overflow-hidden">
+          <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-brands fa-python text-amber-400 text-lg"></i>
+              <span class="font-mono text-xs sm:text-sm text-slate-200 font-bold">Algoritmo César en Python</span>
+            </div>
+            <button onclick="copyToClipboard(document.getElementById('labCaesarPythonCode').innerText, 'Script César copiado')" class="px-3 py-1.5 rounded-lg bg-white/[0.1] hover:bg-white/[0.2] text-xs font-mono text-white transition cursor-pointer font-bold">
+              <i class="fa-regular fa-copy mr-1"></i> Copiar
+            </button>
+          </div>
+          <pre id="labCaesarPythonCode" class="p-5 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed overflow-auto flex-1 text-slate-100 bg-[#040407]">
+<span class="py-cm"># Cifrado César didáctico</span>
+<span class="py-kw">def</span> <span class="py-fn">cifrado_cesar</span>(texto, desplazamiento=<span class="py-num">3</span>):
+    resultado = []
+    <span class="py-kw">for</span> char <span class="py-kw">in</span> texto:
+        <span class="py-kw">if</span> char.<span class="py-fn">isalpha</span>():
+            base = <span class="py-fn">ord</span>(<span class="py-str">'A'</span>) <span class="py-kw">if</span> char.<span class="py-fn">isupper</span>() <span class="py-kw">else</span> <span class="py-fn">ord</span>(<span class="py-str">'a'</span>)
+            nuevo = <span class="py-fn">chr</span>((<span class="py-fn">ord</span>(char) - base + desplazamiento) % <span class="py-num">26</span> + base)
+            resultado.<span class="py-fn">append</span>(nuevo)
+        <span class="py-kw">else</span>:
+            resultado.<span class="py-fn">append</span>(char)
+    <span class="py-kw">return</span> <span class="py-str">""</span>.<span class="py-fn">join</span>(resultado)
+
+mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
+<span class="py-fn">print</span>(<span class="py-str">"Cifrado:"</span>, <span class="py-fn">cifrado_cesar</span>(mensaje, desplazamiento=<span class="py-num">3</span>))</pre>
+        </div>
       </div>
+
     </section>
 
 
@@ -1608,31 +1939,41 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
       });
     }
 
+        // =========================================================
+    // LABORATORIO CRIPTOGRÁFICO EN EL NAVEGADOR (DEMO1.PY + EXPO)
     // =========================================================
-    // LABORATORIO CRIPTOGRÁFICO EN EL NAVEGADOR (WEB CRYPTO API)
-    // =========================================================
-    let currentLabMode = 'symmetric';
-    let labLastCipherToken = "";
-    let lastSha256Digest = "";
+    let currentLabMode = 'official';
     const textEncoder = new TextEncoder();
     const textDecoder = new TextDecoder();
 
-    function arrayBufferToBase64(buffer) {
+    // Estado interno del simulador de sesión DEMO1.PY
+    const demo1Tokens = {};
+    let demo1NextId = 1;
+
+    // Helpers para Base64 URL-safe (idéntico a Python base64.urlsafe_b64encode/decode)
+    function urlSafeBase64Encode(buffer) {
       const bytes = new Uint8Array(buffer);
       let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      return btoa(binary);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_');
     }
 
-    function base64ToUint8Array(base64) {
-      const binary = atob(base64.trim());
+    function urlSafeBase64Decode(str) {
+      let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const binary = atob(b64);
       const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
       return bytes;
     }
 
-    async function deriveKeyFromPassword(password, salt) {
-      const imported = await window.crypto.subtle.importKey(
+    // Derivación de clave PBKDF2/SHA-256 de 256 bits para el simulador web
+    async function deriveDemo1Key(password, salt) {
+      const keyMaterial = await window.crypto.subtle.importKey(
         'raw',
         textEncoder.encode(password),
         'PBKDF2',
@@ -1640,165 +1981,308 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
         ['deriveKey']
       );
       return window.crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt: salt, iterations: 200000, hash: 'SHA-256' },
-        imported,
+        { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+        keyMaterial,
         { name: 'AES-GCM', length: 256 },
         false,
         ['encrypt', 'decrypt']
       );
     }
 
-    function generateRandomLabKey() {
-      const keys = ['SecurityMaster#2026', 'ZeroTrustPython!99', 'CryptographicKey$42', 'QuantumGuard*88', 'AlphaCipher#X99'];
-      const chosen = keys[Math.floor(Math.random() * keys.length)];
-      const pwdInput = document.getElementById('labPassword');
-      if (pwdInput) {
-        pwdInput.value = chosen;
-        updatePasswordEntropy(chosen);
-        showToast("Nueva clave aleatoria generada");
-        encryptAesLab();
-      }
+    function appendDemo1Console(htmlContent) {
+      const consoleEl = document.getElementById('demo1ConsoleOutput');
+      if (!consoleEl) return;
+      const div = document.createElement('div');
+      div.className = "py-0.5 border-b border-white/[0.04]";
+      div.innerHTML = htmlContent;
+      consoleEl.appendChild(div);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
     }
 
-    function playDecodeWave(finalText, targetEl, onComplete) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-      let iter = 0;
-      const maxIter = 5;
-      const len = Math.min(finalText.length, 64);
-      const timer = setInterval(() => {
-        iter++;
-        let scrambled = '';
-        for (let i = 0; i < len; i++) {
-          scrambled += chars[Math.floor(Math.random() * chars.length)];
-        }
-        targetEl.textContent = scrambled;
-        if (iter >= maxIter) {
-          clearInterval(timer);
-          targetEl.textContent = finalText;
-          if (onComplete) onComplete();
-        }
-      }, 25);
-    }
-
-    async function encryptAesLab() {
-      try {
-        const text = document.getElementById('labInputText').value;
-        const password = document.getElementById('labPassword').value;
-        const feedback = document.getElementById('labFeedbackMsg');
-
-        updatePasswordEntropy(password);
-
-        if (!text || !password) {
-          if (feedback) {
-            feedback.textContent = "Ingresa texto y contraseña.";
-            feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
-          }
-          return;
-        }
-
-        const salt = window.crypto.getRandomValues(new Uint8Array(16));
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const key = await deriveKeyFromPassword(password, salt);
-
-        const encrypted = new Uint8Array(await window.crypto.subtle.encrypt(
-          { name: 'AES-GCM', iv: iv },
-          key,
-          textEncoder.encode(text)
-        ));
-
-        const pkg = new Uint8Array(28 + encrypted.length);
-        pkg.set(salt, 0);
-        pkg.set(iv, 16);
-        pkg.set(encrypted, 28);
-
-        labLastCipherToken = arrayBufferToBase64(pkg);
-
-        const outputBox = document.getElementById('labOutputBox');
-        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-emerald-300 break-all select-all shadow-inner";
-
-        playDecodeWave(labLastCipherToken, outputBox, () => {
-          document.getElementById('labOutputLabel').textContent = "3. Token Cifrado AES-GCM (Base64)";
-          document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-emerald-400 font-bold";
-          document.getElementById('labStatusBadge').textContent = "AES-256-GCM";
-
-          if (feedback) {
-            feedback.textContent = "Mensaje cifrado con éxito. El vector IV aleatorio hace que el token sea único.";
-            feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
-          }
+    function updateDemo1TokenSelect() {
+      const sel = document.getElementById('demo1TokenSelect');
+      const badge = document.getElementById('demo1SessionCountBadge');
+      if (!sel) return;
+      
+      const keys = Object.keys(demo1Tokens);
+      sel.innerHTML = '';
+      if (keys.length === 0) {
+        sel.innerHTML = '<option value="">(Primero cifra un mensaje en Opción 1)</option>';
+        if (badge) badge.textContent = "0 tokens en memoria";
+      } else {
+        keys.forEach(k => {
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = `Token #${k} — ${demo1Tokens[k].slice(0, 22)}...`;
+          sel.appendChild(opt);
         });
-
-        updateDynamicPythonScript();
-      } catch (err) {
-        console.error(err);
+        sel.value = keys[keys.length - 1];
+        if (badge) badge.textContent = `${keys.length} token${keys.length > 1 ? 's' : ''} en memoria`;
       }
     }
 
-    async function decryptAesLab() {
-      const feedback = document.getElementById('labFeedbackMsg');
+    async function handleDemo1Encrypt() {
+      const pwdInput = document.getElementById('demo1EncryptPassword');
+      const msgInput = document.getElementById('demo1Plaintext');
+      const password = pwdInput ? pwdInput.value : '';
+      const mensaje = msgInput ? msgInput.value : '';
+
+      if (!password) {
+        showToast("La contraseña no puede estar vacía");
+        appendDemo1Console('<span class="text-rose-400 font-bold"><i class="fa-solid fa-xmark mr-1"></i> La contraseña no puede estar vacía.</span>');
+        return;
+      }
+      if (!mensaje) {
+        showToast("Ingresa un mensaje para cifrar");
+        return;
+      }
+
       try {
-        const password = document.getElementById('labPassword').value;
-        const token = labLastCipherToken;
+        const sal = window.crypto.getRandomValues(new Uint8Array(16));
+        const nonce = window.crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveDemo1Key(password, sal);
 
-        if (!token) {
-          if (feedback) {
-            feedback.textContent = "Primero encripta un mensaje.";
-            feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
-          }
-          return;
-        }
-
-        const raw = base64ToUint8Array(token);
-        if (raw.length < 28) throw new Error("Token no válido");
-
-        const salt = raw.slice(0, 16);
-        const iv = raw.slice(16, 28);
-        const ciphertext = raw.slice(28);
-
-        const key = await deriveKeyFromPassword(password, salt);
-        const decrypted = await window.crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: iv },
+        const textoBytes = textEncoder.encode(mensaje);
+        const cifradoBuffer = await window.crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv: nonce },
           key,
-          ciphertext
+          textoBytes
         );
 
-        const plainText = textDecoder.decode(decrypted);
-        const outputBox = document.getElementById('labOutputBox');
-        outputBox.textContent = plainText;
-        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/30 p-3.5 font-mono text-sm sm:text-base text-white break-all shadow-inner font-bold";
+        const cifradoBytes = new Uint8Array(cifradoBuffer);
+        const paquete = new Uint8Array(16 + 12 + cifradoBytes.length);
+        paquete.set(sal, 0);
+        paquete.set(nonce, 16);
+        paquete.set(cifradoBytes, 28);
 
-        document.getElementById('labOutputLabel').textContent = "3. Mensaje Descifrado";
-        document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-white font-bold";
-        document.getElementById('labStatusBadge').textContent = "Autenticación Válida";
+        const token = urlSafeBase64Encode(paquete);
+        const id = demo1NextId++;
+        demo1Tokens[id] = token;
 
-        if (feedback) {
-          feedback.textContent = "Descifrado correcto: la clave coincide y los datos no fueron alterados.";
-          feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
-        }
+        updateDemo1TokenSelect();
+
+        // Imprimir en consola simulada DEMO1.PY
+        appendDemo1Console(`
+          <div class="mt-2 text-slate-300 font-bold"><span class="text-amber-400">Elige 1, 2, 3 o 4:</span> 1</div>
+          <div class="text-slate-400">Contraseña: <span class="text-slate-500">[••••••••••••]</span></div>
+          <div class="text-slate-400">Mensaje para cifrar: <span class="text-white font-medium">"${mensaje}"</span></div>
+          <div class="text-emerald-400 font-bold mt-1">Token de cifrado #${id}:</div>
+          <div class="text-amber-300 bg-black/80 p-2 rounded border border-white/10 break-all select-all font-mono text-xs my-1">${token}</div>
+        `);
+
+        showToast(`Token #${id} generado con éxito`);
       } catch (err) {
-        const outputBox = document.getElementById('labOutputBox');
-        outputBox.textContent = "ERROR: Clave incorrecta o token manipulado.";
-        outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-rose-950/40 border border-rose-500/40 p-3.5 font-mono text-xs sm:text-sm text-rose-300 break-all";
-        if (feedback) {
-          feedback.textContent = "Criptografía en acción: AES-GCM rechaza cualquier clave incorrecta.";
-          feedback.className = "mt-2 text-xs sm:text-sm text-rose-400 font-bold";
-        }
+        console.error(err);
+        showToast("Error al cifrar el mensaje");
       }
     }
 
+    async function handleDemo1Decrypt() {
+      const sel = document.getElementById('demo1TokenSelect');
+      const pwdInput = document.getElementById('demo1DecryptPassword');
+      const tokenId = sel ? sel.value : null;
+      const password = pwdInput ? pwdInput.value : '';
+
+      if (!tokenId || !demo1Tokens[tokenId]) {
+        appendDemo1Console(`
+          <div class="mt-2 text-slate-300 font-bold"><span class="text-amber-400">Elige 1, 2, 3 o 4:</span> 2</div>
+          <div class="text-rose-400 font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i> Primero cifra un mensaje con la opción 1.</div>
+        `);
+        showToast("No hay tokens guardados");
+        return;
+      }
+
+      const token = demo1Tokens[tokenId];
+      appendDemo1Console(`
+        <div class="mt-2 text-slate-300 font-bold"><span class="text-amber-400">Elige 1, 2, 3 o 4:</span> 2</div>
+        <div class="text-slate-400">Tokens disponibles: <span class="text-amber-300">${Object.keys(demo1Tokens).join(', ')}</span></div>
+        <div class="text-slate-400">Número del token para descifrar: <span class="text-white font-bold">${tokenId}</span></div>
+        <div class="text-slate-400">Contraseña usada para cifrarlo: <span class="text-slate-500">[••••••••••••]</span></div>
+      `);
+
+      try {
+        const paquete = urlSafeBase64Decode(token);
+        if (paquete.length < 28) throw new Error("Paquete inválido");
+
+        const sal = paquete.slice(0, 16);
+        const nonce = paquete.slice(16, 28);
+        const cifrado = paquete.slice(28);
+
+        const key = await deriveDemo1Key(password, sal);
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: nonce },
+          key,
+          cifrado
+        );
+
+        const mensaje = textDecoder.decode(decryptedBuffer);
+
+        appendDemo1Console(`
+          <div class="text-emerald-400 font-bold mt-1.5"><i class="fa-solid fa-check mr-1"></i> Token recuperado</div>
+          <div class="text-slate-400 text-xs">Token de cifrado #${tokenId}:</div>
+          <div class="text-slate-400 bg-black/60 p-1.5 rounded border border-white/10 break-all text-[11px]">${token}</div>
+          <div class="text-white font-bold text-sm sm:text-base mt-1 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+            <span class="text-emerald-400">Mensaje descifrado:</span> "${mensaje}"
+          </div>
+        `);
+        showToast("Mensaje descifrado con éxito");
+      } catch (err) {
+        appendDemo1Console(`
+          <div class="text-rose-400 font-bold mt-1.5 p-2 rounded-lg bg-rose-500/10 border border-rose-500/30">
+            <i class="fa-solid fa-triangle-exclamation mr-1.5"></i>
+            <span>Contraseña incorrecta o token alterado.</span>
+            <div class="text-xs text-rose-300 font-normal mt-0.5">
+              [cryptography.exceptions.InvalidTag detectada por AES-GCM]
+            </div>
+          </div>
+        `);
+        showToast("Fallo de autenticación (InvalidTag)");
+      }
+    }
+
+    async function handleDemo1TamperAttack() {
+      const sel = document.getElementById('demo1TokenSelect');
+      const tokenId = sel ? sel.value : null;
+
+      if (!tokenId || !demo1Tokens[tokenId]) {
+        showToast("Primero cifra un mensaje para simular un ataque");
+        return;
+      }
+
+      const origToken = demo1Tokens[tokenId];
+      // Alterar un carácter del token en el medio
+      const mid = Math.floor(origToken.length / 2);
+      const alteredChar = origToken[mid] === 'A' ? 'B' : 'A';
+      const tamperedToken = origToken.slice(0, mid) + alteredChar + origToken.slice(mid + 1);
+
+      appendDemo1Console(`
+        <div class="mt-2 text-rose-400 font-bold flex items-center gap-2">
+          <i class="fa-solid fa-radiation animate-pulse"></i>
+          <span>[SIMULACIÓN DE ATAQUE EN TRÁNSITO]</span>
+        </div>
+        <div class="text-slate-400 text-xs">Un atacante interceptó el Token #${tokenId} y alteró el byte en la posición ${mid}.</div>
+        <div class="text-amber-300/80 bg-black/80 p-1.5 rounded border border-rose-500/30 break-all text-[11px] font-mono">
+          Token manipulado: ${tamperedToken}
+        </div>
+        <div class="text-slate-300 text-xs mt-1">Intentando descifrar el paquete alterado con la contraseña correcta...</div>
+      `);
+
+      try {
+        const paquete = urlSafeBase64Decode(tamperedToken);
+        const sal = paquete.slice(0, 16);
+        const nonce = paquete.slice(16, 28);
+        const cifrado = paquete.slice(28);
+
+        const pwdInput = document.getElementById('demo1DecryptPassword');
+        const password = pwdInput ? pwdInput.value : '';
+        const key = await deriveDemo1Key(password, sal);
+
+        await window.crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: nonce },
+          key,
+          cifrado
+        );
+      } catch (err) {
+        appendDemo1Console(`
+          <div class="text-rose-400 font-bold mt-1.5 p-2 rounded-lg bg-rose-500/10 border border-rose-500/30">
+            <i class="fa-solid fa-shield-halved mr-1 text-emerald-400"></i>
+            <span>Contraseña incorrecta o token alterado.</span>
+            <div class="text-xs text-slate-300 font-normal mt-0.5">
+              Demostración superada: el algoritmo AES-GCM detectó la manipulación de 1 byte y abortó antes de procesar el texto plano.
+            </div>
+          </div>
+        `);
+        showToast("Manipulación detectada y bloqueada");
+      }
+    }
+
+    function handleDemo1ClearHistory() {
+      for (const k in demo1Tokens) delete demo1Tokens[k];
+      demo1NextId = 1;
+      updateDemo1TokenSelect();
+      appendDemo1Console(`
+        <div class="mt-2 text-slate-300 font-bold"><span class="text-amber-400">Elige 1, 2, 3 o 4:</span> 3</div>
+        <div class="text-slate-400">¿Borrar historial? (s/n): <span class="text-white font-bold">s</span></div>
+        <div class="text-emerald-400 font-bold"><i class="fa-solid fa-trash-can mr-1"></i> Historial borrado.</div>
+      `);
+      showToast("Historial borrado");
+    }
+
+    function handleDemo1ResetTerminal() {
+      const consoleEl = document.getElementById('demo1ConsoleOutput');
+      if (consoleEl) {
+        consoleEl.innerHTML = `
+          <div class="text-slate-400 italic">=== Demo Argon2id + AES-GCM ===</div>
+          <div class="text-slate-400">1. Cifrar un mensaje</div>
+          <div class="text-slate-400">2. Descifrar un mensaje de esta sesión</div>
+          <div class="text-slate-400">3. Borrar mensajes cifrados</div>
+          <div class="text-slate-400">4. Salir</div>
+          <div class="text-emerald-400 font-semibold mt-3 flex items-center gap-2">
+            <i class="fa-solid fa-terminal text-xs"></i>
+            <span>Terminal limpia. Haz clic en "1. Cifrar Mensaje" para comenzar.</span>
+          </div>
+        `;
+      }
+      showToast("Terminal reiniciada");
+    }
+
+    function generateDemo1RandomKey() {
+      const keys = ['Argon2id#Militar2026', 'ZeroTrustPython!99', 'CryptographicKey$42', 'QuantumGuard*88', 'AlphaCipher#X99'];
+      const chosen = keys[Math.floor(Math.random() * keys.length)];
+      const encInput = document.getElementById('demo1EncryptPassword');
+      const decInput = document.getElementById('demo1DecryptPassword');
+      if (encInput) encInput.value = chosen;
+      if (decInput) decInput.value = chosen;
+      showToast("Nueva clave generada");
+    }
+
+    function setWrongPasswordDemo1() {
+      const decInput = document.getElementById('demo1DecryptPassword');
+      if (decInput) decInput.value = "PasswordErroneo#999";
+      showToast("Clave incorrecta cargada para la prueba");
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function copyDemo1TerminalOutput() {
+      const consoleEl = document.getElementById('demo1ConsoleOutput');
+      if (consoleEl) copyToClipboard(consoleEl.innerText, "Salida de terminal copiada");
+    }
+
+    function copyDemo1SourceCode() {
+      const pre = document.getElementById('demo1FullSourcePre');
+      if (pre) copyToClipboard(pre.innerText, "Código DEMO1.PY copiado");
+    }
+
+    // =========================================================
+    // MÓDULOS SECUNDARIOS: HASH (SHA-256) Y CÉSAR
+    // =========================================================
+    let lastSha256Digest = "";
     async function computeSha256Lab() {
-      const text = document.getElementById('labInputText').value;
+      const inputEl = document.getElementById('labHashInputText');
+      if (!inputEl) return;
+      const text = inputEl.value;
+      const counter = document.getElementById('labHashCharCounter');
+      if (counter) counter.textContent = `${text.length} caracteres`;
+
       const data = textEncoder.encode(text);
       const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-      document.getElementById('labOutputLabel').textContent = "2. Hash Digest SHA-256";
-      document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-amber-300 font-bold";
-      document.getElementById('labStatusBadge').textContent = "256 bits";
-
-      const outputBox = document.getElementById('labOutputBox');
-      outputBox.textContent = hashHex;
-      outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-xs sm:text-sm text-amber-300 break-all select-all shadow-inner";
+      const outputBox = document.getElementById('labHashOutputBox');
+      if (outputBox) outputBox.textContent = hashHex;
 
       if (lastSha256Digest && lastSha256Digest !== hashHex) {
         let diffCount = 0;
@@ -1813,14 +2297,10 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
         }
       }
       lastSha256Digest = hashHex;
+    }
 
-      const feedback = document.getElementById('labFeedbackMsg');
-      if (feedback) {
-        feedback.textContent = "64 caracteres hexadecimales. Un cambio minúsculo altera ~50% del digest.";
-        feedback.className = "mt-2 text-xs sm:text-sm text-emerald-400 font-bold";
-      }
-
-      updateDynamicPythonScript();
+    function handleHashInputChange() {
+      computeSha256Lab();
     }
 
     function caesarShift(text, shift) {
@@ -1834,25 +2314,19 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
     }
 
     function computeCaesarLab() {
-      const text = document.getElementById('labInputText').value;
-      const shift = document.getElementById('labCaesarShift').value;
+      const inputEl = document.getElementById('labCaesarInputText');
+      const shiftEl = document.getElementById('labCaesarShift');
+      if (!inputEl || !shiftEl) return;
+      const text = inputEl.value;
+      const shift = shiftEl.value;
       const result = caesarShift(text, shift);
 
-      document.getElementById('labOutputLabel').textContent = `2. Cifrado César (Shift +${shift})`;
-      document.getElementById('labOutputLabel').className = "text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold";
-      document.getElementById('labStatusBadge').textContent = `Shift: ${shift}`;
+      const out = document.getElementById('labCaesarOutputBox');
+      if (out) out.textContent = result;
+    }
 
-      const outputBox = document.getElementById('labOutputBox');
-      outputBox.textContent = result;
-      outputBox.className = "w-full min-h-[72px] max-h-[110px] overflow-y-auto rounded-xl bg-black border border-white/20 p-3.5 font-mono text-sm sm:text-base text-purple-200 break-all select-all shadow-inner";
-
-      const feedback = document.getElementById('labFeedbackMsg');
-      if (feedback) {
-        feedback.textContent = "Sustitución didáctica para comprender la rotación algorítmica de caracteres.";
-        feedback.className = "mt-2 text-xs sm:text-sm text-purple-300 font-bold";
-      }
-
-      updateDynamicPythonScript();
+    function handleCaesarInputChange() {
+      computeCaesarLab();
     }
 
     function handleCaesarShiftChange() {
@@ -1864,25 +2338,29 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
 
     function switchDemoModule(module) {
       currentLabMode = module;
-      const btnSym = document.getElementById('demoBtnSym');
+      const btnOfficial = document.getElementById('demoBtnOfficial');
+      const btnCode = document.getElementById('demoBtnCode');
       const btnHash = document.getElementById('demoBtnHash');
       const btnCaesar = document.getElementById('demoBtnCaesar');
 
-      const modSym = document.getElementById('labModuleSymmetric');
+      const modOfficial = document.getElementById('labModuleOfficial');
+      const modCode = document.getElementById('labModuleCode');
       const modHash = document.getElementById('labModuleHash');
       const modCaesar = document.getElementById('labModuleCaesar');
 
-      [btnSym, btnHash, btnCaesar].forEach(b => {
+      [btnOfficial, btnCode, btnHash, btnCaesar].forEach(b => {
         if (b) b.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer";
       });
-      [modSym, modHash, modCaesar].forEach(m => {
+      [modOfficial, modCode, modHash, modCaesar].forEach(m => {
         if (m) m.classList.add('hidden');
       });
 
-      if (module === 'symmetric') {
-        if (btnSym) btnSym.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
-        if (modSym) modSym.classList.remove('hidden');
-        encryptAesLab();
+      if (module === 'official') {
+        if (btnOfficial) btnOfficial.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
+        if (modOfficial) modOfficial.classList.remove('hidden');
+      } else if (module === 'code') {
+        if (btnCode) btnCode.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
+        if (modCode) modCode.classList.remove('hidden');
       } else if (module === 'hash') {
         if (btnHash) btnHash.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer";
         if (modHash) modHash.classList.remove('hidden');
@@ -1892,90 +2370,6 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
         if (modCaesar) modCaesar.classList.remove('hidden');
         computeCaesarLab();
       }
-    }
-
-    function handleLabInputChange() {
-      const text = document.getElementById('labInputText').value;
-      const counter = document.getElementById('labCharCounter');
-      if (counter) counter.textContent = `${text.length} caracteres`;
-
-      if (currentLabMode === 'symmetric') {
-        encryptAesLab();
-      } else if (currentLabMode === 'hash') {
-        computeSha256Lab();
-      } else {
-        computeCaesarLab();
-      }
-    }
-
-    function escapePythonString(str) {
-      return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-    }
-
-    function updateDynamicPythonScript() {
-      const text = document.getElementById('labInputText').value;
-      const safeText = escapePythonString(text);
-      const codeContainer = document.getElementById('labDynamicPythonCode');
-      if (!codeContainer) return;
-
-      if (currentLabMode === 'symmetric') {
-        const password = escapePythonString(document.getElementById('labPassword').value);
-        codeContainer.innerHTML = `<span class="py-cm"># Cifrado Simétrico AES-GCM con PBKDF2</span>
-<span class="py-kw">import</span> base64, os
-<span class="py-kw">from</span> cryptography.hazmat.primitives.ciphers.aead <span class="py-kw">import</span> <span class="py-cls">AESGCM</span>
-<span class="py-kw">from</span> cryptography.hazmat.primitives.kdf.pbkdf2 <span class="py-kw">import</span> <span class="py-cls">PBKDF2HMAC</span>
-<span class="py-kw">from</span> cryptography.hazmat.primitives <span class="py-kw">import</span> hashes
-
-contrasenia = <span class="py-bytes">b"${password}"</span>
-mensaje = <span class="py-str">"${safeText}"</span>.<span class="py-fn">encode</span>(<span class="py-str">"utf-8"</span>)
-
-<span class="py-cm"># 1. Derivar clave de 256 bits</span>
-salt = os.<span class="py-fn">urandom</span>(<span class="py-num">16</span>)
-kdf = <span class="py-cls">PBKDF2HMAC</span>(hashes.<span class="py-cls">SHA256</span>(), length=<span class="py-num">32</span>, salt=salt, iterations=<span class="py-num">200_000</span>)
-clave_aes = kdf.<span class="py-fn">derive</span>(contrasenia)
-
-<span class="py-cm"># 2. Cifrar con AES-GCM</span>
-iv = os.<span class="py-fn">urandom</span>(<span class="py-num">12</span>)
-cifrador = <span class="py-cls">AESGCM</span>(clave_aes)
-cifrado = cifrador.<span class="py-fn">encrypt</span>(iv, mensaje, associated_data=<span class="py-kw">None</span>)
-
-<span class="py-cm"># 3. Empaquetar y codificar en Base64</span>
-token = base64.<span class="py-fn">b64encode</span>(salt + iv + cifrado).<span class="py-fn">decode</span>()
-<span class="py-fn">print</span>(<span class="py-str">"Token:"</span>, token[:40], <span class="py-str">"..."</span>)`;
-      } else if (currentLabMode === 'hash') {
-        codeContainer.innerHTML = `<span class="py-cm"># Huella digital SHA-256 (Módulo estándar)</span>
-<span class="py-kw">import</span> hashlib
-
-texto = <span class="py-str">"${safeText}"</span>
-datos_bytes = texto.<span class="py-fn">encode</span>(<span class="py-str">"utf-8"</span>)
-
-<span class="py-cm"># Calcular digest hexadecimal</span>
-digest_hex = hashlib.<span class="py-fn">sha256</span>(datos_bytes).<span class="py-fn">hexdigest</span>()
-
-<span class="py-fn">print</span>(<span class="py-str">f"Entrada: {texto}"</span>)
-<span class="py-fn">print</span>(<span class="py-str">f"SHA-256: {digest_hex}"</span>)`;
-      } else {
-        const shift = document.getElementById('labCaesarShift').value;
-        codeContainer.innerHTML = `<span class="py-cm"># Cifrado César didáctico</span>
-<span class="py-kw">def</span> <span class="py-fn">cifrado_cesar</span>(texto, desplazamiento=<span class="py-num">${shift}</span>):
-    resultado = []
-    <span class="py-kw">for</span> char <span class="py-kw">in</span> texto:
-        <span class="py-kw">if</span> char.<span class="py-fn">isalpha</span>():
-            base = <span class="py-fn">ord</span>(<span class="py-str">'A'</span>) <span class="py-kw">if</span> char.<span class="py-fn">isupper</span>() <span class="py-kw">else</span> <span class="py-fn">ord</span>(<span class="py-str">'a'</span>)
-            nuevo = <span class="py-fn">chr</span>((<span class="py-fn">ord</span>(char) - base + desplazamiento) % <span class="py-num">26</span> + base)
-            resultado.<span class="py-fn">append</span>(nuevo)
-        <span class="py-kw">else</span>:
-            resultado.<span class="py-fn">append</span>(char)
-    <span class="py-kw">return</span> <span class="py-str">""</span>.<span class="py-fn">join</span>(resultado)
-
-mensaje = <span class="py-str">"${safeText}"</span>
-<span class="py-fn">print</span>(<span class="py-str">"Cifrado:"</span>, <span class="py-fn">cifrado_cesar</span>(mensaje))`;
-      }
-    }
-
-    function copyDynamicLabPythonCode() {
-      const codeText = document.getElementById('labDynamicPythonCode').innerText;
-      copyToClipboard(codeText, "Script copiado");
     }
 
     // =========================================================
@@ -1999,16 +2393,17 @@ mensaje = <span class="py-str">"${safeText}"</span>
       }
     }
 
-    // =========================================================
+        // =========================================================
     // ARRANQUE AUTOMÁTICO
     // =========================================================
     window.addEventListener('DOMContentLoaded', async () => {
       initCryptoCanvas();
-      updatePasswordEntropy(document.getElementById('labPassword')?.value || '');
-      await encryptAesLab();
       document.querySelectorAll('#hero [data-motion]').forEach(el => el.classList.add('in-view'));
 
-
+      // Pre-cargar el primer token en DEMO1.PY para que el expositor tenga datos listos de inmediato
+      setTimeout(() => {
+        handleDemo1Encrypt();
+      }, 400);
     });
   </script>
 </body>
