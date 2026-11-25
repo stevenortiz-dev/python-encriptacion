@@ -1,7 +1,14 @@
 # Python & Encriptación 🔒⚡
 
 > **Presentación oficial y laboratorio interactivo de ciberseguridad y criptografía moderna con Python.**  
-> Diseñada para exposiciones en proyector (100vh, fondo OLED Black, animaciones fluidas y sin barras invasivas).
+> Diseñada para exposiciones en proyector (100vh, fondo OLED Black, animaciones fluidas, sin barras invasivas y con la demo oficial `DEMO1.PY`).
+
+---
+
+## 🌐 Enlaces del Proyecto
+
+- **Presentación Web en Vivo (GitHub Pages)**: [stevenortiz-dev.github.io/python-encriptacion](https://stevenortiz-dev.github.io/python-encriptacion/)
+- **Repositorio en GitHub**: [github.com/stevenortiz-dev/python-encriptacion](https://github.com/stevenortiz-dev/python-encriptacion)
 
 ---
 
@@ -34,11 +41,13 @@ La plataforma está estructurada en los 6 ejes temáticos fundamentales:
    - Mensajería cifrada de extremo a extremo (E2EE).
    - Control de versiones y firmas de commits en Git.
 
-5. **05. DEMO en Vivo (Laboratorio Web Crypto API)**:
-   - Cifrado simétrico autenticado **AES-256-GCM** con derivación de claves PBKDF2 y medidor de entropía en tiempo real.
-   - Función hash **SHA-256** con demostración del efecto avalancha en vivo (conteo de mutación de bits/caracteres).
-   - **Cifrado César** didáctico con selector de desplazamiento rotacional.
-   - Generador y exportador dinámico de código Python listo para ejecutar.
+5. **05. DEMO Oficial: Argon2id + AES-GCM (`DEMO1.PY`)**:
+   - **Derivación Robusta (Argon2id)**: Ganador de la Password Hashing Competition. Utiliza 64 MB de memoria y 4 lanes para neutralizar ataques paralelos con granjas de GPUs o ASICs.
+   - **Cifrado Autenticado (AES-GCM)**: Cifra con clave de 256 bits y genera un tag MAC de autenticación.
+   - **Detección de Manipulación en Vivo (`InvalidTag`)**: Si se altera un solo bit o se usa una contraseña incorrecta, el sistema aborta de inmediato.
+   - **Empaquetado URL-Safe**: Empaqueta `sal (16B) + nonce (12B) + cifrado` en un único token Base64 URL-safe.
+   - **Simulador de Terminal Web**: Reproduce la experiencia interactiva de la consola de comandos de Python directamente en el navegador.
+   - **Módulos Complementarios**: Efecto Avalancha (SHA-256) y Cifrado César didáctico.
 
 6. **06. Conclusiones & Quiz**:
    - Síntesis de buenas prácticas: importancia de la gestión de claves, uso de librerías auditadas y rol en la banca digital y privacidad moderna.
@@ -46,16 +55,41 @@ La plataforma está estructurada en los 6 ejes temáticos fundamentales:
 
 ---
 
-## 🚀 Cómo Ejecutar el Proyecto
+## 🚀 Cómo Ejecutar la Demo Oficial (`DEMO1.PY`) en Python
 
-No requiere instalación de servidores ni dependencias externas; funciona directamente en cualquier navegador moderno:
+Para ejecutar el script interactivo directamente en tu consola local:
 
-1. Clona el repositorio:
+```bash
+# 1. Instalar la librería cryptography
+pip install cryptography
+
+# 2. Ejecutar la demo
+python DEMO1.PY
+```
+
+### Menú Interactivo del Script:
+```text
+=== Demo Argon2id + AES-GCM ===
+1. Cifrar un mensaje
+2. Descifrar un mensaje de esta sesión
+3. Borrar mensajes cifrados
+4. Salir
+Elige 1, 2, 3 o 4:
+```
+
+---
+
+## 💻 Cómo Abrir la Presentación Web
+
+No requiere servidores ni configuraciones complejas:
+
+1. **Opción Online**: Ábrela directamente desde [GitHub Pages](https://stevenortiz-dev.github.io/python-encriptacion/).
+2. **Opción Local**:
    ```bash
    git clone https://github.com/stevenortiz-dev/python-encriptacion.git
    ```
-2. Abre el archivo `index.html` en tu navegador favorito (Chrome, Edge, Firefox, Brave).
-3. (Opcional) Presiona <kbd>F11</kbd> o el botón **Pantalla Completa** para proyectar en modo cine/auditorio.
+   Abre `index.html` en cualquier navegador web.
+3. Presiona <kbd>F11</kbd> para activar el modo pantalla completa para proyector.
 
 ---
 
@@ -72,12 +106,10 @@ No requiere instalación de servidores ni dependencias externas; funciona direct
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **HTML5 semántico** con optimización de layout `100vh`.
-- **Tailwind CSS** para un diseño moderno, tipografías y efectos de cristal (*Glassmorphism*).
-- **JavaScript Moderno (ES6+)** con la **Web Cryptography API** nativa del navegador.
-- **HTML5 Canvas** interactivo para la constelación criptográfica de fondo reactiva al cursor.
-- **Google Fonts**: *Plus Jakarta Sans*, *Space Grotesk* y *JetBrains Mono*.
-- **Font Awesome 6.5.1** para iconografía de ciberseguridad.
+- **Python 3.12** con la librería `cryptography` (módulos `AESGCM`, `Argon2id`, `InvalidTag`).
+- **HTML5 & Tailwind CSS** optimizado para proyector con fondo OLED Black y sin barras invasivas.
+- **Web Cryptography API** nativa para ejecución segura y reactiva en el cliente web.
+- **HTML5 Canvas** interactivo para constelación de partículas criptográficas.
 
 ---
 
