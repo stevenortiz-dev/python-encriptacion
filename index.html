@@ -874,184 +874,209 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
     <!-- =========================================================
          05. DEMO: LABORATORIO EN VIVO — ARGON2ID + AES-GCM (DEMO1.PY)
     ========================================================== -->
-    <section id="demo" class="projector-section">
-      <div data-motion="fade-up" class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold mb-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>DEMO OFICIAL DE LA EXPOSICIÓN</span>
-          </div>
-          <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
-            DEMO: <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400">Argon2id + AES-GCM</span> (DEMO1.PY)
-          </h2>
-          <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
-            Ejecución del script oficial de la exposición: derivación robusta con <strong class="text-white">Argon2id</strong> (resistente a fuerza bruta GPU), cifrado simétrico autenticado con <strong class="text-white">AES-GCM</strong> (detección de alteración <code class="text-amber-300 font-mono">InvalidTag</code>) y gestión de tokens en sesión.
-          </p>
-        </div>
+        <section id="demo" class="projector-section">
 
-        <!-- Selector de Módulo -->
-        <div class="bg-black border border-white/20 p-1.5 rounded-xl flex items-center gap-1 flex-wrap">
-          <button id="demoBtnOfficial" onclick="switchDemoModule('official')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-black transition cursor-pointer">
-            <i class="fa-solid fa-terminal mr-1.5"></i>Simulador DEMO1.PY
+      <!-- ── ENCABEZADO ── -->
+      <div data-motion="fade-up" class="mb-8 text-center sm:text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold mb-3">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>DEMO OFICIAL DE LA EXPOSICIÓN</span>
+        </div>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          DEMO: <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400">Argon2id + AES-GCM</span> (DEMO1.PY)
+        </h2>
+        <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-2 max-w-3xl">
+          Ejecución del script oficial de la exposición: derivación robusta con <strong class="text-white">Argon2id</strong> (resistente a fuerza bruta GPU), cifrado simétrico autenticado con <strong class="text-white">AES-GCM</strong> (detección de alteración <code class="text-amber-300 font-mono">InvalidTag</code>) y gestión de tokens en sesión.
+        </p>
+      </div>
+
+      <!-- ── SELECTOR DE MÓDULO ── -->
+      <div class="flex justify-center sm:justify-start mb-6">
+        <div class="bg-black/80 border border-white/20 p-1.5 rounded-2xl flex items-center gap-1 flex-wrap">
+          <button id="demoBtnOfficial" onclick="switchDemoModule('official')" class="px-5 py-2 rounded-xl text-sm font-bold bg-white text-black transition cursor-pointer">
+            <i class="fa-solid fa-terminal mr-2"></i>Simulador DEMO1.PY
           </button>
-          <button id="demoBtnCode" onclick="switchDemoModule('code')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
-            <i class="fa-brands fa-python mr-1.5 text-amber-400"></i>Código Fuente DEMO1.PY
+          <button id="demoBtnCode" onclick="switchDemoModule('code')" class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer">
+            <i class="fa-brands fa-python mr-2 text-amber-400"></i>Código Fuente
           </button>
-          <button id="demoBtnHash" onclick="switchDemoModule('hash')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
-            <i class="fa-solid fa-fingerprint mr-1.5 text-sky-400"></i>Efecto Avalancha (SHA-256)
+          <button id="demoBtnHash" onclick="switchDemoModule('hash')" class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer">
+            <i class="fa-solid fa-fingerprint mr-2 text-sky-400"></i>Efecto Avalancha
           </button>
-          <button id="demoBtnCaesar" onclick="switchDemoModule('caesar')" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition cursor-pointer">
-            <i class="fa-solid fa-clock-rotate-left mr-1.5 text-purple-400"></i>César
+          <button id="demoBtnCaesar" onclick="switchDemoModule('caesar')" class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer">
+            <i class="fa-solid fa-clock-rotate-left mr-2 text-purple-400"></i>César
           </button>
         </div>
       </div>
 
-      <!-- MÓDULO 1: SIMULADOR OFICIAL DEMO1.PY (POR DEFECTO) -->
+      <!-- ══════════════════════════════════════════════════════════════
+           MÓDULO 1: SIMULADOR OFICIAL DEMO1.PY
+      ══════════════════════════════════════════════════════════════ -->
       <div id="labModuleOfficial" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        
-        <!-- Panel Izquierdo: Controles de Sesión -->
-        <div data-motion="slide-left" data-delay="100" class="lg:col-span-5 motion-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between gap-5">
-          
+
+        <!-- ── Panel Izquierdo: Pasos Unificados ── -->
+        <div data-motion="slide-left" data-delay="100" class="lg:col-span-5 motion-card rounded-2xl p-6 flex flex-col gap-6">
+
+          <!-- Cabecera del panel -->
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-sliders"></i> Panel de Control DEMO1.PY
+            </span>
+            <span id="demo1SessionCountBadge" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-white/10 text-slate-300 border border-white/15 font-bold">
+              0 tokens
+            </span>
+          </div>
+
+          <!-- PASO 1: CIFRAR -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-black flex items-center justify-center">1</span>
+              <span class="text-sm font-bold text-emerald-300 font-mono uppercase tracking-wide">Cifrar un Mensaje</span>
+              <span class="ml-auto text-[11px] font-mono text-slate-500">Sal 16B · Nonce 12B · Tag 16B</span>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1.5">
+                <label for="demo1EncryptPassword">Contraseña:</label>
+                <button type="button" onclick="generateDemo1RandomKey()" class="text-amber-300 hover:text-amber-200 text-[11px] font-mono cursor-pointer font-bold">
+                  <i class="fa-solid fa-dice mr-1"></i>Clave Fuerte
+                </button>
+              </div>
+              <div class="relative">
+                <input id="demo1EncryptPassword" type="password" value="SuperClaveSegura#2026"
+                  class="w-full rounded-xl bg-black border border-white/20 px-3 py-2.5 text-sm font-mono text-amber-300 focus:outline-none focus:border-emerald-400 pr-10">
+                <button type="button" onclick="togglePasswordVisibility('demo1EncryptPassword','pwdEyeIcon1')"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer text-xs">
+                  <i id="pwdEyeIcon1" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label for="demo1Plaintext" class="text-xs font-mono text-slate-300 block mb-1.5">Mensaje para cifrar:</label>
+              <input id="demo1Plaintext" type="text" value="Mi clave del WiFi es 1234"
+                class="w-full rounded-xl bg-black border border-white/20 px-3 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-400">
+            </div>
+
+            <button onclick="handleDemo1Encrypt()"
+              class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+              <i class="fa-solid fa-lock"></i>
+              <span>Cifrar (Argon2id + AES-GCM)</span>
+            </button>
+          </div>
+
+          <!-- Divisor -->
+          <div class="border-t border-white/10"></div>
+
+          <!-- PASO 2: DESCIFRAR -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-6 h-6 rounded-full bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-black flex items-center justify-center">2</span>
+              <span class="text-sm font-bold text-sky-300 font-mono uppercase tracking-wide">Descifrar de esta Sesión</span>
+              <span class="ml-auto text-[11px] font-mono text-slate-500">Validación AES-GCM</span>
+            </div>
+
+            <div>
+              <label for="demo1TokenSelect" class="text-xs font-mono text-slate-300 block mb-1.5">Token a descifrar:</label>
+              <select id="demo1TokenSelect"
+                class="w-full rounded-xl bg-black border border-white/20 px-3 py-2.5 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 cursor-pointer">
+                <option value="">(Primero cifra un mensaje en el paso 1)</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1.5">
+                <label for="demo1DecryptPassword">Contraseña:</label>
+                <button type="button" onclick="setWrongPasswordDemo1()"
+                  class="text-rose-400 hover:text-rose-300 text-[11px] font-mono cursor-pointer font-bold"
+                  title="Prueba con una contraseña incorrecta para ver la detección en vivo">
+                  <i class="fa-solid fa-triangle-exclamation mr-1"></i>Clave Incorrecta
+                </button>
+              </div>
+              <div class="relative">
+                <input id="demo1DecryptPassword" type="password" value="SuperClaveSegura#2026"
+                  class="w-full rounded-xl bg-black border border-white/20 px-3 py-2.5 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 pr-10">
+                <button type="button" onclick="togglePasswordVisibility('demo1DecryptPassword','pwdEyeIcon2')"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer text-xs">
+                  <i id="pwdEyeIcon2" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="handleDemo1Decrypt()"
+                class="py-3 px-3 rounded-xl bg-white hover:bg-slate-200 text-black font-black text-sm transition cursor-pointer flex items-center justify-center gap-2 shadow-lg">
+                <i class="fa-solid fa-unlock text-sm"></i>
+                <span>Descifrar</span>
+              </button>
+              <button onclick="handleDemo1TamperAttack()"
+                class="py-3 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-sm transition cursor-pointer flex items-center justify-center gap-2"
+                title="Altera 1 byte del token para provocar InvalidTag">
+                <i class="fa-solid fa-bug text-sm"></i>
+                <span>Manipular Token</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Divisor -->
+          <div class="border-t border-white/10"></div>
+
+          <!-- Footer: Acciones de sesión + KDF -->
           <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-white/10">
-              <span class="text-xs font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-2">
-                <i class="fa-solid fa-sliders"></i> Panel de Control DEMO1.PY
-              </span>
-              <span id="demo1SessionCountBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10 font-bold">
-                0 tokens en memoria
-              </span>
-            </div>
-
-            <!-- Opción 1: Cifrar -->
-            <div class="p-4 rounded-xl bg-black/60 border border-white/15 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Opción 1: Cifrar un Mensaje
-                </span>
-                <span class="text-[11px] font-mono text-slate-400">Sal 16B + Nonce 12B + Tag 16B</span>
-              </div>
-
-              <div>
-                <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1">
-                  <label for="demo1EncryptPassword">Contraseña:</label>
-                  <button type="button" onclick="generateDemo1RandomKey()" class="text-amber-300 hover:text-amber-200 text-[11px] font-mono cursor-pointer font-bold">
-                    <i class="fa-solid fa-dice mr-1"></i>Clave Fuerte
-                  </button>
-                </div>
-                <div class="relative">
-                  <input id="demo1EncryptPassword" type="password" value="SuperClaveSegura#2026" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-emerald-400 pr-9">
-                  <button type="button" onclick="togglePasswordVisibility('demo1EncryptPassword', 'pwdEyeIcon1')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-                    <i id="pwdEyeIcon1" class="fa-solid fa-eye"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label for="demo1Plaintext" class="text-xs font-mono text-slate-300 block mb-1">Mensaje para cifrar:</label>
-                <input id="demo1Plaintext" type="text" value="Mi clave del WiFi es 1234" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-400">
-              </div>
-
-              <button onclick="handleDemo1Encrypt()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
-                <i class="fa-solid fa-lock"></i>
-                <span>1. Cifrar Mensaje (Argon2id + AESGCM)</span>
-              </button>
-            </div>
-
-            <!-- Opción 2: Descifrar -->
-            <div class="p-4 rounded-xl bg-black/60 border border-white/15 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-sky-400"></span> Opción 2: Descifrar de esta Sesión
-                </span>
-                <span class="text-[11px] font-mono text-slate-400">Validación de Tag AES-GCM</span>
-              </div>
-
-              <div>
-                <label for="demo1TokenSelect" class="text-xs font-mono text-slate-300 block mb-1">Número del token para descifrar:</label>
-                <select id="demo1TokenSelect" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 cursor-pointer">
-                  <option value="">(Primero cifra un mensaje en Opción 1)</option>
-                </select>
-              </div>
-
-              <div>
-                <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1">
-                  <label for="demo1DecryptPassword">Contraseña usada para cifrarlo:</label>
-                  <button type="button" onclick="setWrongPasswordDemo1()" class="text-rose-400 hover:text-rose-300 text-[11px] font-mono cursor-pointer font-bold" title="Prueba con una contraseña incorrecta para ver la detección en vivo">
-                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>Clave Incorrecta
-                  </button>
-                </div>
-                <div class="relative">
-                  <input id="demo1DecryptPassword" type="password" value="SuperClaveSegura#2026" class="w-full rounded-lg bg-black border border-white/20 px-3 py-2 text-sm font-mono text-amber-300 focus:outline-none focus:border-sky-400 pr-9">
-                  <button type="button" onclick="togglePasswordVisibility('demo1DecryptPassword', 'pwdEyeIcon2')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-                    <i id="pwdEyeIcon2" class="fa-solid fa-eye"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex gap-2">
-                <button onclick="handleDemo1Decrypt()" class="flex-1 py-2.5 px-3 rounded-xl bg-white hover:bg-slate-200 text-black font-bold text-sm transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg">
-                  <i class="fa-solid fa-unlock text-xs"></i>
-                  <span>2. Descifrar</span>
-                </button>
-                <button onclick="handleDemo1TamperAttack()" class="py-2.5 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5" title="Altera 1 byte del token para provocar InvalidTag en vivo">
-                  <i class="fa-solid fa-bug text-xs"></i>
-                  <span>Manipular Token</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Opciones 3 y 4 -->
-            <div class="flex items-center justify-between pt-1 text-xs font-mono">
-              <button onclick="handleDemo1ClearHistory()" class="text-slate-400 hover:text-rose-400 transition cursor-pointer flex items-center gap-1.5">
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="handleDemo1ClearHistory()"
+                class="py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 hover:text-rose-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2">
                 <i class="fa-solid fa-trash-can"></i>
-                <span>3. Borrar historial</span>
+                <span>Borrar Historial</span>
               </button>
-              <button onclick="handleDemo1ResetTerminal()" class="text-slate-400 hover:text-white transition cursor-pointer flex items-center gap-1.5">
+              <button onclick="handleDemo1ResetTerminal()"
+                class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2">
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>Limpiar Pantalla</span>
               </button>
             </div>
-          </div>
 
-          <!-- Medidor de Entropía -->
-          <div class="pt-3 border-t border-white/10">
-            <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-1.5">
-              <span>Derivación de Clave (KDF):</span>
-              <span class="text-emerald-400 font-bold">Argon2id (64 MB, 3 iter, 4 lanes)</span>
-            </div>
-            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden flex gap-1">
-              <div class="h-full flex-1 bg-emerald-400"></div>
-              <div class="h-full flex-1 bg-emerald-400"></div>
-              <div class="h-full flex-1 bg-emerald-400"></div>
-              <div class="h-full flex-1 bg-emerald-400"></div>
+            <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <div class="flex items-center justify-between text-xs font-mono text-slate-300 mb-2">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-emerald-400"></i> KDF Activo:</span>
+                <span class="text-emerald-400 font-bold">Argon2id · 64 MB · 3 iter · 4 lanes</span>
+              </div>
+              <div class="h-1.5 bg-white/10 rounded-full overflow-hidden flex gap-0.5">
+                <div class="h-full flex-1 bg-emerald-400 rounded-full"></div>
+                <div class="h-full flex-1 bg-emerald-400 rounded-full"></div>
+                <div class="h-full flex-1 bg-emerald-400 rounded-full"></div>
+                <div class="h-full flex-1 bg-emerald-400 rounded-full"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Panel Derecho: Terminal Interactiva en Vivo -->
+        <!-- ── Panel Derecho: Terminal ── -->
         <div data-motion="slide-right" data-delay="150" class="lg:col-span-7 terminal-window rounded-2xl flex flex-col overflow-hidden">
-          <div class="px-5 py-3 bg-black border-b border-white/[0.1] flex items-center justify-between">
-            <div class="flex items-center gap-2">
+          <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
               <span class="w-3.5 h-3.5 rounded-full bg-rose-500/80"></span>
               <span class="w-3.5 h-3.5 rounded-full bg-amber-400/80"></span>
               <span class="w-3.5 h-3.5 rounded-full bg-emerald-500/80"></span>
-              <span class="ml-2 font-mono text-xs sm:text-sm text-slate-200 font-bold flex items-center gap-2">
+              <span class="ml-2 font-mono text-sm text-slate-200 font-bold flex items-center gap-2">
                 <span>python -u DEMO1.PY</span>
-                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">En Vivo</span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">En Vivo</span>
               </span>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="copyDemo1TerminalOutput()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-white transition cursor-pointer font-bold" title="Copiar consola">
+              <button onclick="copyDemo1TerminalOutput()"
+                class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-white transition cursor-pointer font-bold" title="Copiar consola">
                 <i class="fa-regular fa-copy"></i>
               </button>
-              <a href="DEMO1.PY" download="DEMO1.py" class="px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold transition flex items-center gap-1.5">
+              <a href="DEMO1.PY" download="DEMO1.py"
+                class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-download"></i> Descargar DEMO1.PY
               </a>
             </div>
           </div>
 
-          <!-- Consola Output -->
-          <div id="demo1ConsoleOutput" class="p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-y-auto flex-1 text-slate-200 min-h-[380px] max-h-[520px] bg-black/90 space-y-1 select-text">
+          <!-- Console output -->
+          <div id="demo1ConsoleOutput"
+            class="p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-y-auto flex-1 text-slate-200 min-h-[380px] max-h-[520px] bg-black/90 space-y-1 select-text">
             <div class="text-slate-400 italic">=== Demo Argon2id + AES-GCM ===</div>
             <div class="text-slate-400">1. Cifrar un mensaje</div>
             <div class="text-slate-400">2. Descifrar un mensaje de esta sesión</div>
@@ -1059,12 +1084,12 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
             <div class="text-slate-400">4. Salir</div>
             <div class="text-emerald-400 font-semibold mt-3 flex items-center gap-2">
               <i class="fa-solid fa-terminal text-xs"></i>
-              <span>Terminal lista. Haz clic en "1. Cifrar Mensaje" para comenzar la prueba en vivo.</span>
+              <span>Terminal lista. Haz clic en "Cifrar" para comenzar la prueba en vivo.</span>
             </div>
           </div>
 
-          <!-- Pie de Terminal -->
-          <div class="px-5 py-2.5 bg-black/80 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+          <!-- Terminal footer -->
+          <div class="px-5 py-3 bg-black/80 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
             <span class="flex items-center gap-1.5">
               <i class="fa-solid fa-shield-halved text-emerald-400"></i> AEAD: Confidencialidad + Integridad con InvalidTag
             </span>
@@ -1074,7 +1099,9 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
 
       </div>
 
-      <!-- MÓDULO 2: CÓDIGO FUENTE DEMO1.PY COMPLETO -->
+      <!-- ══════════════════════════════════════════════════════════════
+           MÓDULO 2: CÓDIGO FUENTE DEMO1.PY COMPLETO
+      ══════════════════════════════════════════════════════════════ -->
       <div id="labModuleCode" class="hidden space-y-4">
         <div class="terminal-window rounded-2xl overflow-hidden">
           <div class="px-5 py-3.5 bg-black border-b border-white/[0.1] flex items-center justify-between flex-wrap gap-2">
@@ -1204,7 +1231,7 @@ Token recuperado"</span>)
     <span class=<span class="py-str">"py-fn"</span>>main</span>()</pre>
         </div>
 
-        <!-- Explicación de los 3 Pilares Técnicos de DEMO1.PY -->
+        <!-- Explicación de los 3 Pilares Técnicos -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="motion-card p-4 rounded-xl border-white/15">
             <div class="text-xs font-mono text-amber-300 font-bold mb-1">01. KDF: Argon2id</div>
@@ -1227,7 +1254,9 @@ Token recuperado"</span>)
         </div>
       </div>
 
-      <!-- MÓDULO 3: HASH SHA-256 (EFECTO AVALANCHA) -->
+      <!-- ══════════════════════════════════════════════════════════════
+           MÓDULO 3: HASH SHA-256 (EFECTO AVALANCHA)
+      ══════════════════════════════════════════════════════════════ -->
       <div id="labModuleHash" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <div class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
           <div>
@@ -1288,7 +1317,9 @@ digest = hashlib.<span class="py-fn">sha256</span>(texto.<span class="py-fn">enc
         </div>
       </div>
 
-      <!-- MÓDULO 4: CÉSAR (DIDÁCTICO) -->
+      <!-- ══════════════════════════════════════════════════════════════
+           MÓDULO 4: CÉSAR (DIDÁCTICO)
+      ══════════════════════════════════════════════════════════════ -->
       <div id="labModuleCaesar" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <div class="lg:col-span-6 motion-card rounded-2xl p-6 flex flex-col justify-between gap-5">
           <div>
