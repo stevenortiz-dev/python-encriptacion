@@ -60,6 +60,7 @@
 
     /* Cada sección ocupa la pantalla completa en el proyector */
     .projector-section {
+      position: relative;
       min-height: 100vh;
       scroll-snap-align: start;
       display: flex;
@@ -69,10 +70,47 @@
       padding-bottom: 3.5rem;
     }
 
-    /* Fondo negro azabache puro (OLED Black) */
+    /* Fondo negro OLED con dot-grid sutil para separar tarjetas en proyector */
     .bg-deep-canvas {
       background-color: #000000;
-      background-image: none;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.065) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* Halos ambientales sutiles por sección (identidad de color sin recargar) */
+    .section-glow::before {
+      content: '';
+      position: absolute;
+      inset: 8% -4%;
+      pointer-events: none;
+      z-index: -1;
+      border-radius: 9999px;
+      filter: blur(80px);
+      opacity: 0.45;
+    }
+    .glow-sky::before     { background: radial-gradient(circle at 25% 40%, rgba(56, 189, 248, 0.14), transparent 60%); }
+    .glow-amber::before   { background: radial-gradient(circle at 75% 45%, rgba(251, 191, 36, 0.12), transparent 60%); }
+    .glow-purple::before  { background: radial-gradient(circle at 30% 50%, rgba(192, 132, 252, 0.13), transparent 60%); }
+    .glow-teal::before    { background: radial-gradient(circle at 70% 45%, rgba(45, 212, 191, 0.12), transparent 60%); }
+    .glow-emerald::before { background: radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.14), transparent 62%); }
+    .glow-gold::before    { background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.10), transparent 60%); }
+
+    /* Conectores y animación de flujo en Funcionamiento */
+    @keyframes flowArrowPulse {
+      0%, 100% { opacity: 0.35; transform: translateX(0); }
+      50% { opacity: 0.95; transform: translateX(3px); }
+    }
+    .flow-arrow {
+      animation: flowArrowPulse 2.2s ease-in-out infinite;
+    }
+    .flow-step-card {
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+    .flow-step-active {
+      border-color: rgba(52, 211, 153, 0.75) !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      box-shadow: 0 0 26px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+      transform: translateY(-4px) scale(1.03) !important;
     }
 
     /* =========================================================
@@ -145,10 +183,10 @@
     /* Tarjetas de cristal negro con Spotlight Dinámico (Glow que sigue el cursor) */
     .motion-card {
       position: relative;
-      background: rgba(10, 10, 14, 0.88);
+      background: rgba(11, 11, 16, 0.90);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.11);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       box-shadow: 
         0 20px 45px -15px rgba(0, 0, 0, 0.98),
         inset 0 1px 0 rgba(255, 255, 255, 0.14);
@@ -204,6 +242,8 @@
   </style>
 </head>
 <body class="bg-deep-canvas min-h-screen flex flex-col selection:bg-white/25 selection:text-white relative">
+  <!-- Barra mínima de progreso de scroll (2px, sin texto ni controles) -->
+  <div id="scrollProgressBar" class="fixed top-0 left-0 h-[2px] w-0 z-50 pointer-events-none bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-300 transition-[width] duration-150 ease-out"></div>
 
   <!-- Canvas de partículas y constelación criptográfica de fondo interactivo -->
   <canvas id="cryptoCanvas" aria-hidden="true"></canvas>
@@ -222,7 +262,7 @@
     <!-- =========================================================
          00. HERO / PORTADA DE APERTURA PARA PROYECTOR
     ========================================================== -->
-    <section id="hero" class="projector-section text-center items-center">
+    <section id="hero" class="projector-section section-glow glow-emerald text-center items-center">
       
       <!-- Insignia de alta visibilidad -->
       <div data-motion="fade-up" class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.08] border border-white/20 text-slate-200 font-mono text-xs sm:text-sm mb-6 motion-float">
@@ -232,7 +272,7 @@
 
       <!-- Título de impacto visible a gran distancia -->
       <h1 data-motion="fade-up" data-delay="100" class="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]">
-        Python & <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">Encriptación</span>
+        Python & <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-sky-200 to-emerald-300">Encriptación</span>
       </h1>
 
       <p data-motion="fade-up" data-delay="200" class="mt-4 text-base sm:text-xl md:text-2xl text-slate-200 max-w-3xl leading-relaxed font-normal">
@@ -277,7 +317,7 @@
           <i class="fa-solid fa-arrow-down text-sm"></i>
         </a>
         <button onclick="toggleFullscreen()" class="px-5 py-3.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.16] border border-white/20 text-white font-display font-semibold text-base transition flex items-center gap-2 cursor-pointer">
-          <i class="fa-solid fa-expand text-sm"></i>
+          <i id="fullscreenIcon" class="fa-solid fa-expand text-sm"></i>
           <span>Pantalla Completa (F)</span>
         </button>
       </div>
@@ -288,12 +328,14 @@
     <!-- =========================================================
          01. CONCEPTOS
     ========================================================== -->
-    <section id="conceptos" class="projector-section">
+    <section id="conceptos" class="projector-section section-glow glow-sky">
       <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
-        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-white"></span> 01 &bull; Fundamentos
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-sky-300 font-bold inline-flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-sky-400"></span> 01 &bull; Fundamentos
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Conceptos de Criptografía</h2>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          Conceptos de <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-cyan-200">Criptografía</span>
+        </h2>
         <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
           Los 4 elementos esenciales del proceso criptográfico y las 3 grandes familias matemáticas.
         </p>
@@ -460,12 +502,14 @@
     <!-- =========================================================
          02. FUNCIONAMIENTO (PEPEM)
     ========================================================== -->
-    <section id="funcionamiento" class="projector-section">
+    <section id="funcionamiento" class="projector-section section-glow glow-amber">
       <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
-        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-white"></span> 02 &bull; Mecanismo Interno
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-amber-300 font-bold inline-flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span> 02 &bull; Mecanismo Interno
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Funcionamiento de la Encriptación</h2>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          Funcionamiento de la <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-emerald-300">Encriptación</span>
+        </h2>
         <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
           El proceso secuencial paso a paso explicado de forma clara y directa para cualquier audiencia.
         </p>
@@ -489,36 +533,52 @@
         </div>
       </div>
 
-      <!-- Diagrama de Flujo Visual e Interactivo -->
-      <div data-motion="fade-up" data-delay="150" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-        <div class="motion-card p-4 rounded-xl text-center">
+      <!-- Diagrama de Flujo Visual e Interactivo con Conectores -->
+      <div data-motion="fade-up" data-delay="150" class="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5 lg:gap-2 mb-6">
+        <div id="pepemStep1" class="flow-step-card motion-card flex-1 p-4 rounded-xl text-center">
           <div class="w-8 h-8 rounded-full bg-sky-500/20 text-sky-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-sky-500/30">1</div>
-          <div class="font-bold text-sm text-white">Mensaje Original</div>
-          <div class="text-xs font-mono text-sky-300 mt-1">"WiFi: 1234"</div>
+          <div class="font-bold text-sm sm:text-base text-white">Mensaje Original</div>
+          <div class="text-xs sm:text-sm font-mono text-sky-300 mt-1">"WiFi: 1234"</div>
         </div>
 
-        <div class="motion-card p-4 rounded-xl text-center">
+        <div class="hidden lg:flex items-center justify-center text-slate-400 px-0.5 flow-arrow">
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </div>
+
+        <div id="pepemStep2" class="flow-step-card motion-card flex-1 p-4 rounded-xl text-center">
           <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-amber-500/30">2</div>
-          <div class="font-bold text-sm text-white">Clave Secreta</div>
-          <div class="text-xs font-mono text-amber-300 mt-1">Fernet.generate()</div>
+          <div class="font-bold text-sm sm:text-base text-white">Clave Secreta</div>
+          <div class="text-xs sm:text-sm font-mono text-amber-300 mt-1">Fernet.generate()</div>
         </div>
 
-        <div class="motion-card p-4 rounded-xl text-center border-white/30">
+        <div class="hidden lg:flex items-center justify-center text-slate-400 px-0.5 flow-arrow" style="animation-delay: 0.3s">
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </div>
+
+        <div id="pepemStep3" class="flow-step-card motion-card flex-1 p-4 rounded-xl text-center border-white/30">
           <div class="w-8 h-8 rounded-full bg-white text-black mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold">3</div>
-          <div class="font-bold text-sm text-white">Caja Fernet</div>
-          <div class="text-xs font-mono text-slate-300 mt-1">caja.encrypt()</div>
+          <div class="font-bold text-sm sm:text-base text-white">Caja Fernet</div>
+          <div class="text-xs sm:text-sm font-mono text-slate-200 mt-1">caja.encrypt()</div>
         </div>
 
-        <div class="motion-card p-4 rounded-xl text-center">
+        <div class="hidden lg:flex items-center justify-center text-slate-400 px-0.5 flow-arrow" style="animation-delay: 0.6s">
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </div>
+
+        <div id="pepemStep4" class="flow-step-card motion-card flex-1 p-4 rounded-xl text-center">
           <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-rose-500/30">4</div>
-          <div class="font-bold text-sm text-white">Texto Ilegible</div>
-          <div class="text-xs font-mono text-rose-300 mt-1">gAAAAABm9xQ...</div>
+          <div class="font-bold text-sm sm:text-base text-white">Texto Ilegible</div>
+          <div class="text-xs sm:text-sm font-mono text-rose-300 mt-1">gAAAAABm9xQ...</div>
         </div>
 
-        <div class="motion-card p-4 rounded-xl text-center">
+        <div class="hidden lg:flex items-center justify-center text-slate-400 px-0.5 flow-arrow" style="animation-delay: 0.9s">
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </div>
+
+        <div id="pepemStep5" class="flow-step-card motion-card flex-1 p-4 rounded-xl text-center">
           <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 mx-auto mb-2 text-xs flex items-center justify-center font-mono font-bold border border-emerald-500/30">5</div>
-          <div class="font-bold text-sm text-white">Recuperación</div>
-          <div class="text-xs font-mono text-emerald-300 mt-1">caja.decrypt()</div>
+          <div class="font-bold text-sm sm:text-base text-white">Recuperación</div>
+          <div class="text-xs sm:text-sm font-mono text-emerald-300 mt-1">caja.decrypt()</div>
         </div>
       </div>
 
@@ -590,153 +650,158 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
     <!-- =========================================================
          03. CARACTERÍSTICAS
     ========================================================== -->
-    <section id="caracteristicas" class="projector-section">
+    <section id="caracteristicas" class="projector-section section-glow glow-purple">
       <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
-        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-white"></span> 03 &bull; Capacidades de Python
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-purple-300 font-bold inline-flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-purple-400"></span> 03 &bull; Capacidades de Python
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Características de la Encriptación en Python</h2>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          Características de la Encriptación en <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-sky-300">Python</span>
+        </h2>
         <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
           Los 7 pilares esenciales que definen la seguridad criptográfica en el ecosistema de Python.
         </p>
       </div>
 
-      <!-- Cuadrícula de las 7 Características Clave -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <!-- Bento Grid Asimétrico (12 columnas) -->
+      <div class="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 sm:gap-5">
         
-        <!-- 1. Confidencialidad -->
-        <div data-motion="fade-up" data-delay="50" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 1. Confidencialidad (destacado 5 cols) -->
+        <div data-motion="fade-up" data-delay="50" class="md:col-span-3 lg:col-span-5 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 text-lg">
                 <i class="fa-solid fa-user-lock"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-sky-300 font-bold border border-white/10">01. Acceso</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-300 font-bold border border-sky-500/20">01. Acceso</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">1. Confidencialidad</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Protege la información para que solo personas autorizadas puedan acceder a ella.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-sky-300 font-semibold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-sky-300 font-semibold">
             Principio: Privacidad Absoluta
           </div>
         </div>
 
-        <!-- 2. Algoritmos de cifrado -->
-        <div data-motion="fade-up" data-delay="100" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 2. Algoritmos de cifrado (4 cols) -->
+        <div data-motion="fade-up" data-delay="100" class="md:col-span-3 lg:col-span-4 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 text-lg">
                 <i class="fa-solid fa-calculator"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-purple-300 font-bold border border-white/10">02. Motores</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 font-bold border border-purple-500/20">02. Motores</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">2. Algoritmos de Cifrado</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Utiliza métodos como AES y RSA para convertir datos en códigos ilegibles.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-purple-300 font-semibold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-purple-300 font-semibold">
             Estándares: AES-256, RSA-2048
           </div>
         </div>
 
-        <!-- 3. Claves de seguridad -->
-        <div data-motion="fade-up" data-delay="150" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 3. Claves de seguridad (3 cols) -->
+        <div data-motion="fade-up" data-delay="150" class="md:col-span-3 lg:col-span-3 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
                 <i class="fa-solid fa-key"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-amber-300 font-bold border border-white/10">03. Control</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 font-bold border border-amber-500/20">03. Control</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">3. Claves de Seguridad</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Utiliza claves para cifrar y descifrar mensajes de forma segura.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-amber-300 font-semibold">
-            Generación: Entropía segura (os.urandom)
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-amber-300 font-semibold">
+            Entropía: os.urandom
           </div>
         </div>
 
-        <!-- 4. Protección de datos -->
-        <div data-motion="fade-up" data-delay="200" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 4. Protección de datos (4 cols) -->
+        <div data-motion="fade-up" data-delay="200" class="md:col-span-3 lg:col-span-4 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg">
                 <i class="fa-solid fa-shield-halved"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-emerald-300 font-bold border border-white/10">04. Cobertura</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 font-bold border border-emerald-500/20">04. Cobertura</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">4. Protección de Datos</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Permite proteger contraseñas, archivos y mensajes privados.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-emerald-300 font-semibold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-emerald-300 font-semibold">
             Alcance: Reposo y Tránsito
           </div>
         </div>
 
-        <!-- 5. Cifrado y descifrado -->
-        <div data-motion="fade-up" data-delay="250" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 5. Cifrado y descifrado (4 cols) -->
+        <div data-motion="fade-up" data-delay="250" class="md:col-span-3 lg:col-span-4 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 text-lg">
                 <i class="fa-solid fa-arrows-rotate"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-teal-300 font-bold border border-white/10">05. Ciclo</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-300 font-bold border border-teal-500/20">05. Ciclo</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">5. Cifrado y Descifrado</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Transforma información legible en códigos y permite recuperar el mensaje original.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-teal-300 font-semibold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-teal-300 font-semibold">
             Operación: Bidireccional reversible
           </div>
         </div>
 
-        <!-- 6. Integridad -->
-        <div data-motion="fade-up" data-delay="300" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 6. Integridad (4 cols) -->
+        <div data-motion="fade-up" data-delay="300" class="md:col-span-3 lg:col-span-4 motion-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-lg">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 text-lg">
                 <i class="fa-solid fa-check-double"></i>
               </div>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-rose-300 font-bold border border-white/10">06. Control</span>
+              <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 font-bold border border-rose-500/20">06. Control</span>
             </div>
             <h3 class="font-display font-bold text-white text-lg sm:text-xl">6. Integridad</h3>
             <p class="text-slate-200 text-sm sm:text-base mt-2 leading-relaxed">
               Permite detectar modificaciones no autorizadas en la información mediante mecanismos criptográficos.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-rose-300 font-semibold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-rose-300 font-semibold">
             Mecanismo: HMAC, Firmas, Hashes
           </div>
         </div>
 
-        <!-- 7. Librerías de Python -->
-        <div data-motion="fade-up" data-delay="350" class="motion-card p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 md:col-span-2 lg:col-span-3 border-white/20">
+        <!-- 7. Librerías de Python (Bento Banner 12 cols con botón copiar) -->
+        <div data-motion="fade-up" data-delay="350" class="md:col-span-6 lg:col-span-12 motion-card p-5 sm:p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-amber-400/25">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 text-2xl flex-shrink-0">
+            <div class="w-12 h-12 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 text-2xl flex-shrink-0">
               <i class="fa-brands fa-python"></i>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.1] text-amber-300 font-bold">07. Ecosistema</span>
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-xs sm:text-sm font-mono px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 font-bold border border-amber-400/25">07. Ecosistema</span>
                 <h3 class="font-display font-bold text-white text-lg sm:text-xl">7. Librerías de Python</h3>
               </div>
               <p class="text-slate-200 text-sm sm:text-base mt-1 leading-relaxed">
-                Utiliza herramientas como <strong class="text-white font-mono">Cryptography</strong> y <strong class="text-white font-mono">PyCryptodome</strong> para facilitar el cifrado.
+                Utiliza herramientas como <span class="px-2 py-0.5 rounded bg-white/10 text-white font-mono text-sm font-semibold">Cryptography</span> y <span class="px-2 py-0.5 rounded bg-white/10 text-white font-mono text-sm font-semibold">PyCryptodome</span> para facilitar el cifrado.
               </p>
             </div>
           </div>
-          <div class="flex items-center gap-2 font-mono text-xs text-slate-300 whitespace-nowrap">
-            <span class="px-3 py-1.5 rounded-lg bg-black border border-white/20 text-emerald-400 font-bold">pip install cryptography pycryptodome</span>
-          </div>
+          <button type="button" onclick="copyToClipboard('pip install cryptography pycryptodome', 'Comando pip copiado')"
+            class="px-4 py-2.5 rounded-xl bg-black hover:bg-white/10 border border-white/20 text-emerald-400 font-mono text-xs sm:text-sm font-bold transition flex items-center gap-2.5 cursor-pointer whitespace-nowrap"
+            title="Copiar comando de instalación">
+            <span>pip install cryptography pycryptodome</span>
+            <i class="fa-regular fa-copy text-slate-300"></i>
+          </button>
         </div>
 
       </div>
@@ -746,12 +811,14 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
     <!-- =========================================================
          04. APLICACIONES
     ========================================================== -->
-    <section id="aplicaciones" class="projector-section">
+    <section id="aplicaciones" class="projector-section section-glow glow-teal">
       <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
-        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-white"></span> 04 &bull; Mundo Real
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-teal-300 font-bold inline-flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-teal-400"></span> 04 &bull; Mundo Real
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Aplicaciones en la Industria</h2>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          Aplicaciones en la <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-sky-300">Industria</span>
+        </h2>
         <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
           Cómo se implementa la criptografía en sistemas de producción reales con Python.
         </p>
@@ -874,7 +941,7 @@ secreto_abierto = caja.<span class="py-fn">decrypt</span>(secreto_oculto)
     <!-- =========================================================
          05. DEMO: LABORATORIO EN VIVO — ARGON2ID + AES-GCM (DEMO1.PY)
     ========================================================== -->
-    <section id="demo" class="projector-section">
+    <section id="demo" class="projector-section section-glow glow-emerald">
 
       <!-- ── ENCABEZADO + BARRA DE MÓDULOS ALINEADA ── -->
       <div data-motion="fade-up" class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
@@ -1384,12 +1451,14 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
     <!-- =========================================================
          06. CONCLUSIONES (TEXTO EXACTO DEL USUARIO + QUIZ)
     ========================================================== -->
-    <section id="conclusiones" class="projector-section">
+    <section id="conclusiones" class="projector-section section-glow glow-gold">
       <div data-motion="fade-up" class="mb-7 text-center sm:text-left">
-        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-white"></span> 06 &bull; Conclusiones Clave
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-wider text-amber-300 font-bold inline-flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-300"></span> 06 &bull; Conclusiones Clave
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">Conclusiones</h2>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mt-1">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400">Conclusiones</span>
+        </h2>
         <p class="text-slate-200 text-sm sm:text-base md:text-lg mt-1 max-w-3xl">
           Ideas centrales y reflexiones sobre la encriptación y su aplicación con Python.
         </p>
@@ -1409,7 +1478,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
               La encriptación es esencial para proteger la información en el mundo digital. Con algoritmos como AES y RSA, y librerías como Cryptography y PyCryptodome, Python permite cifrar contraseñas, archivos y mensajes sin implementar matemáticas complejas desde cero.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-sky-300 font-bold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-sky-300 font-bold">
             Pilar: Algoritmos Estándar & Productividad
           </div>
         </div>
@@ -1425,7 +1494,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
               El cifrado garantiza la confidencialidad, ya que solo quien tiene la clave correcta puede recuperar el mensaje, y la integridad, al detectar modificaciones no autorizadas. Esto es clave en la banca en línea, la mensajería privada y el almacenamiento de datos personales.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-emerald-300 font-bold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-emerald-300 font-bold">
             Pilar: Privacidad + No Manipulación
           </div>
         </div>
@@ -1441,7 +1510,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
               Sin embargo, la seguridad depende también de la gestión de claves: una clave expuesta compromete todo el sistema. Por eso conviene usar librerías reconocidas en lugar de crear algoritmos propios.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-amber-300 font-bold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-amber-300 font-bold">
             Pilar: Protección de Claves & Cero Cripto Casera
           </div>
         </div>
@@ -1457,7 +1526,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
               En resumen, Python ofrece herramientas poderosas y accesibles para cifrar información, pero su uso efectivo exige entender tanto la teoría como las buenas prácticas de seguridad.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-white/[0.08] text-xs font-mono text-purple-300 font-bold">
+          <div class="mt-4 pt-3 border-t border-white/[0.1] text-xs sm:text-sm font-mono text-purple-300 font-bold">
             Pilar: Dominio Teórico + Implementación Práctica
           </div>
         </div>
@@ -1559,7 +1628,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
 
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().then(() => {
-          if (icon) icon.className = 'fa-solid fa-compress text-xs';
+          if (icon) icon.className = 'fa-solid fa-compress text-sm';
           showToast("Modo Proyector Pantalla Completa activo");
         }).catch(() => {
           showToast("Usa F11 en tu navegador");
@@ -1567,7 +1636,7 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
       } else {
         if (document.exitFullscreen) {
           document.exitFullscreen().then(() => {
-            if (icon) icon.className = 'fa-solid fa-expand text-xs';
+            if (icon) icon.className = 'fa-solid fa-expand text-sm';
             showToast("Pantalla completa cerrada");
           });
         }
@@ -1577,9 +1646,18 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
     document.addEventListener('fullscreenchange', () => {
       const icon = document.getElementById('fullscreenIcon');
       if (document.fullscreenElement) {
-        if (icon) icon.className = 'fa-solid fa-compress text-xs';
+        if (icon) icon.className = 'fa-solid fa-compress text-sm';
       } else {
-        if (icon) icon.className = 'fa-solid fa-expand text-xs';
+        if (icon) icon.className = 'fa-solid fa-expand text-sm';
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggleFullscreen();
       }
     });
 
@@ -1707,26 +1785,18 @@ mensaje = <span class="py-str">"Mi clave del WiFi es 1234"</span>
     });
 
     // =========================================================
-    // SCROLLSPY Y CONTADOR HUD
+    // BARRA DE PROGRESO DE SCROLL MINIMALISTA
     // =========================================================
-    const sections = document.querySelectorAll('section[id]');
-    
-    window.addEventListener('scroll', () => {
-      let currentSectionId = '';
-      const scrollPos = window.scrollY + 180;
+    function updateScrollProgressBar() {
+      const bar = document.getElementById('scrollProgressBar');
+      if (!bar) return;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100)) : 0;
+      bar.style.width = `${progress.toFixed(1)}%`;
+    }
 
-      sections.forEach(section => {
-        const top = section.offsetTop;
-        const height = section.offsetHeight;
-        if (scrollPos >= top && scrollPos < top + height) {
-          currentSectionId = section.getAttribute('id');
-        }
-      });
-
-
-
-
-    });
+    window.addEventListener('scroll', updateScrollProgressBar, { passive: true });
+    window.addEventListener('resize', updateScrollProgressBar, { passive: true });
 
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1817,6 +1887,15 @@ print("Asi se ve encriptado:", secreto_oculto)
 secreto_abierto = caja.decrypt(secreto_oculto)
 print("Asi vuelve a verse:", secreto_abierto.decode())`;
 
+    function highlightPepemFlowStep(activeIdx) {
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById(`pepemStep${i}`);
+        if (!el) continue;
+        if (i === activeIdx) el.classList.add('flow-step-active');
+        else el.classList.remove('flow-step-active');
+      }
+    }
+
     let pepemIsRunning = false;
     function runPepemDemoLive() {
       if (pepemIsRunning) return;
@@ -1828,18 +1907,24 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
       badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-amber-300"></i> Ejecutando criptografía...';
       badge.className = 'text-amber-300 font-bold flex items-center gap-1.5';
 
+      highlightPepemFlowStep(1);
+      setTimeout(() => highlightPepemFlowStep(2), 160);
+      setTimeout(() => highlightPepemFlowStep(3), 320);
+      setTimeout(() => highlightPepemFlowStep(4), 500);
+
       out.innerHTML = `
         <div class="text-slate-300"><span class="text-sky-300">$</span> python ejemplo_pepem_wifi.py</div>
-        <div class="text-slate-400 text-xs italic">[1/3] Generando llave simétrica de 256 bits...</div>
+        <div class="text-slate-300 text-xs italic">[1/3] Generando llave simétrica de 256 bits...</div>
       `;
 
       setTimeout(() => {
-        const mockKey = "Fernet.generate_key() -> b'" + arrayBufferToBase64(window.crypto.getRandomValues(new Uint8Array(32))) + "'";
-        const mockToken = "gAAAAAB" + arrayBufferToBase64(window.crypto.getRandomValues(new Uint8Array(48)));
+        const mockKey = "Fernet.generate_key() -> b'" + urlSafeBase64Encode(window.crypto.getRandomValues(new Uint8Array(32))) + "'";
+        const mockToken = "gAAAAAB" + urlSafeBase64Encode(window.crypto.getRandomValues(new Uint8Array(48)));
 
+        highlightPepemFlowStep(5);
         out.innerHTML = `
           <div class="text-slate-300"><span class="text-sky-300">$</span> python ejemplo_pepem_wifi.py</div>
-          <div class="text-slate-400 text-xs py-1 border-b border-white/[0.06]"><i class="fa-solid fa-key text-amber-300 mr-1.5"></i>Llave generada: <span class="text-amber-200">${mockKey.slice(0, 38)}...</span></div>
+          <div class="text-slate-300 text-xs py-1 border-b border-white/[0.06]"><i class="fa-solid fa-key text-amber-300 mr-1.5"></i>Llave generada: <span class="text-amber-200">${mockKey.slice(0, 38)}...</span></div>
           <div class="text-rose-300 font-bold mt-2">Asi se ve encriptado:</div>
           <div class="text-amber-300 bg-black p-2.5 rounded-lg border border-white/10 break-all select-all font-mono text-xs">${mockToken}</div>
           <div class="text-emerald-400 font-bold mt-2">Asi vuelve a verse:</div>
@@ -1850,6 +1935,7 @@ print("Asi vuelve a verse:", secreto_abierto.decode())`;
         badge.className = 'text-emerald-400 font-bold flex items-center gap-1.5';
         pepemIsRunning = false;
         showToast("Demostración WiFi ejecutada con éxito");
+        setTimeout(() => highlightPepemFlowStep(0), 1800);
       }, 700);
     }
 
